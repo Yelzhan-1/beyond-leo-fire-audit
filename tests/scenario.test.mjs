@@ -71,3 +71,32 @@ test('resolveScenarioFromUrl: unknown destination ignored', () => {
   assert.equal(r.envId, 'lander');
   assert.equal(r.dest, 'moon');
 });
+
+test('parseScenarioQuery reads compare params', () => {
+  const p = S.parseScenarioQuery('?d=mars&cmp=iss');
+  assert.equal(p.compare.dest, 'iss');
+  assert.equal(p.compareOn, true);
+  const c = S.parseScenarioQuery('?d=custom&g=0&cmp=custom&cg=0.38');
+  assert.equal(c.compare.dest, 'custom');
+  assert.equal(c.compare.g, 0.38);
+});
+
+test('scenarioSubtitle uses custom line when envId is custom', () => {
+  const line = S.scenarioSubtitle({
+    envId: 'custom',
+    dest: 'custom',
+    env: { g: 0, p: 56.5, o2: 34, custom: true },
+    fmtG: (g) => g + ' g',
+    fmtP: (p) => String(p),
+    fmtO2: (o) => o + '%'
+  });
+  assert.match(line, /^Custom/);
+  assert.match(line, /56\.5/);
+});
+
+test('resolveCompareFromUrl yields ISS for cmp=iss', () => {
+  const parsed = S.parseScenarioQuery('?cmp=iss');
+  const c = S.resolveCompareFromUrl(parsed.compare, A.ENVS, A.CUSTOM_DEFAULT, customStub);
+  assert.equal(c.envId, 'iss');
+  assert.equal(c.live.g, 0);
+});

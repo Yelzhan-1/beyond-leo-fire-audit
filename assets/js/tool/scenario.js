@@ -13,10 +13,10 @@
   var DEFAULT_PRESET_ID = 'lander';
   var GRAVITY_TICKS = [0, 0.16, 0.38, 1];
   var GRAVITY_TICK_LABELS = [
-    { g: 0, label: 'ISS 0' },
-    { g: 0.16, label: 'Moon 0.16' },
-    { g: 0.38, label: 'Mars 0.38' },
-    { g: 1, label: 'Earth 1' }
+    { g: 0, short: 'ISS', long: 'ISS · 0 g', title: '0 g — International Space Station' },
+    { g: 0.16, short: 'Moon', long: 'Moon · 0.16 g', title: '0.16 g — lunar gravity' },
+    { g: 0.38, short: 'Mars', long: 'Mars · 0.38 g', title: '0.38 g — Martian gravity' },
+    { g: 1, short: 'Earth', long: 'Earth · 1 g', title: '1 g — Earth gravity' }
   ];
 
   var SLIDER = {
@@ -60,13 +60,30 @@
     var envId = env || (d ? envIdFromDest(d) : null);
     var dest = d || (envId ? destFromEnvId(envId) : null);
 
+    var cmp = p.get('cmp');
+  var compare = null;
+    if (cmp) {
+      var cmpDest = envIdFromDest(cmp) ? cmp : (cmp === 'custom' ? 'custom' : null);
+      if (cmpDest) {
+        compare = {
+          dest: cmpDest,
+          envId: p.get('cenv') || envIdFromDest(cmpDest),
+          g: num(p.get('cg')),
+          p: num(p.get('cp')),
+          o2: num(p.get('co2'))
+        };
+      }
+    }
+
     return {
       dest: dest,
       envId: envId,
       g: num(p.get('g')),
       p: num(p.get('p')),
       o2: num(p.get('o2')),
-      row: p.get('row') || null
+      row: p.get('row') || null,
+      compare: compare,
+      compareOn: p.get('cmp') != null && compare != null
     };
   }
 
@@ -88,6 +105,65 @@
       if (o2 != null) parts.push('o2=' + encodeURIComponent(roundO2(o2)));
     }
     return parts.join('&');
+  }
+
+  /** Human-readable line for verdict panel (custom shows live g/p/O2). */
+  function scenarioSubtitle(opts) {
+    var envId = opts.envId;
+    var dest = opts.dest;
+    var env = opts.env;
+    var fmtG = opts.fmtG;
+    var fmtP = opts.fmtP;
+    var fmtO2 = opts.fmtO2;
+    if (!env) return '';
+    var isCustom = envId === 'custom' || dest === 'custom' || !!env.custom;
+    if (isCustom) {
+      return 'Custom · ' + fmtG(env.g) + ' · ' + fmtP(env.p) + ' kPa · ' + fmtO2(env.o2) + ' O\u2082';
+    }
+    return env.name || '';
+  }
+
+  function serializeCompare(compare, presetEnv) {
+    if (!compare || !compare.dest) return '';
+    var parts = ['cmp=' + encodeURIComponent(compare.dest)];
+    var envId = compare.envId || envIdFromDest(compare.dest);
+    if (envId && envId !== envIdFromDest(compare.dest)) parts.push('cenv=' + encodeURIComponent(envId));
+    var g = compare.g, pr = compare.p, o2 = compare.o2;
+    if (presetEnv) {
+      if (g != null && !near(g, presetEnv.g)) parts.push('cg=' + encodeURIComponent(roundG(g)));
+      if (pr != null && !near(pr, presetEnv.p, 0.05)) parts.push('cp=' + encodeURIComponent(roundP(pr)));
+      if (o2 != null && !near(o2, presetEnv.o2, 0.05)) parts.push('co2=' + encodeURIComponent(roundO2(o2)));
+    } else {
+      if (g != null) parts.push('cg=' + encodeURIComponent(roundG(g)));
+      if (pr != null) parts.push('cp=' + encodeURIComponent(roundP(pr)));
+      if (o2 != null) parts.push('co2=' + encodeURIComponent(roundO2(o2)));
+    }
+    return parts.join('&');
+  }
+
+  function serializeScenarioFull(state, presetEnv, compare, comparePreset) {
+    var base = serializeScenario(state, presetEnv);
+    if (!compare || !compare.dest) return base;
+    var tail = serializeCompare(compare, comparePreset);
+    return tail ? (base ? base + '&' + tail : tail) : base;
+  }
+
+  function buildShareUrl(origin, pathname, state, presetEnv, compare, comparePreset) {
+    var q = serializeScenarioFull(state, presetEnv, compare, comparePreset);
+    var path = pathname || '/';
+    return (origin || '') + path + (q ? '?' + q : '');
+  }
+
+  function resolveCompareFromUrl(compareParsed, envs, customDefault, getCustom) {
+    if (!compareParsed || !compareParsed.dest) return null;
+    var parsed = {
+      dest: compareParsed.dest,
+      envId: compareParsed.envId,
+      g: compareParsed.g,
+      p: compareParsed.p,
+      o2: compareParsed.o2
+    };
+    return resolveScenarioFromUrl(parsed, envs, customDefault, getCustom);
   }
 
   function roundG(g) { return (Math.round(g * 100) / 100).toFixed(2).replace(/\.?0+$/, '').replace(/^(\d+)$/, '$1.0'); }
@@ -154,9 +230,14 @@
 
     var live = applyScenarioToEnv(base, parsed) || cloneEnvObj(base);
     var matched = matchPresetId(live, envs, customDefault);
-    if (matched === 'custom' && getCustom) {
+    if (matched === 'custom') {
       live.id = 'custom';
       live.custom = true;
+      if (customDefault) {
+        live.name = customDefault.name;
+        live.phrase = customDefault.phrase;
+        live.kind = customDefault.kind;
+      }
     } else {
       var preset = findEnvById(envs, customDefault, null, matched);
       if (preset) {
@@ -203,6 +284,11 @@
     envIdFromDest: envIdFromDest,
     destFromEnvId: destFromEnvId,
     near: near,
-    clamp: clamp
+    clamp: clamp,
+    scenarioSubtitle: scenarioSubtitle,
+    serializeCompare: serializeCompare,
+    serializeScenarioFull: serializeScenarioFull,
+    buildShareUrl: buildShareUrl,
+    resolveCompareFromUrl: resolveCompareFromUrl
   };
 });
