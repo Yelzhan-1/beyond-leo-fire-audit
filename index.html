@@ -71,10 +71,7 @@
 
     <noscript><div class="state state--error"><h3>The live numbers need JavaScript</h3><p>Read the <a href="method">method</a>, <a href="evidence">evidence</a>, or <a href="evidence.json">evidence.json</a>. The audit table needs JavaScript.</p></div></noscript>
 
-    <div class="tool-coach" id="toolCoach" hidden>
-      <p class="tool-coach__text"><span class="tool-coach__n">1</span> Pick a destination · <span class="tool-coach__n">2</span> Drag gravity · <span class="tool-coach__n">3</span> Tap a rule for evidence</p>
-      <button type="button" class="btn btn--ghost btn--sm tool-coach__dismiss" id="toolCoachDismiss" aria-label="Dismiss tips">Dismiss</button>
-    </div>
+    <div id="toolCoachSlotTop" class="tool-coach-slot tool-coach-slot--top"></div>
 
     <section class="tool-workspace" aria-label="Audit workspace">
     <div class="tool-grid">
@@ -83,6 +80,7 @@
           <h2 class="tool-panel__title">Destination</h2>
           <div class="chip-row chip-row--dest" id="destChips" role="group" aria-label="Destination"></div>
         </div>
+        <div id="toolCoachSlotMobile" class="tool-coach-slot tool-coach-slot--mobile"></div>
         <details class="tool-details" id="toolAdjust">
           <summary>Adjust cabin</summary>
           <div class="tool-details__body">
@@ -112,15 +110,20 @@
         <div class="tool-verdicts__head">
           <div class="tool-verdicts__title-row">
             <h2 id="verdicts-title">Verdicts</h2>
-            <div class="tool-verdicts__actions">
-              <button type="button" class="btn btn--ghost btn--sm" id="toolShare">Share</button>
-              <button type="button" class="btn btn--ghost btn--sm" id="toolReport">Download report card</button>
-              <button type="button" class="btn btn--ghost btn--sm" id="toolCompare" aria-pressed="false">Compare</button>
+            <div class="tool-verdicts__actions" role="toolbar" aria-label="Verdict tools">
+              <button type="button" class="tool-bar-btn" id="toolShare" aria-label="Share link to this scenario">
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M10 2.5a2.5 2.5 0 1 0 .7 4.9L7.4 9.7a2.5 2.5 0 1 0 1.2 1.2l3.3-2.3a2.5 2.5 0 1 0 .1-5.8Z"/></svg>
+                <span class="tool-bar-btn__txt">Share</span>
+              </button>
+              <button type="button" class="tool-bar-btn" id="toolReport" aria-label="Download PNG report card">
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 1.5 5.5 5H3.5v9h9V5H10.5L8 1.5Zm0 2.2L9.2 5H8v-1.3Z"/></svg>
+                <span class="tool-bar-btn__txt">PNG</span>
+              </button>
+              <button type="button" class="tool-bar-btn" id="toolCompare" aria-pressed="false" aria-label="Compare with another destination">
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M2 4h5v2H4v4H2V4Zm7 0h5v8h-2v-4H9V4Z"/></svg>
+                <span class="tool-bar-btn__txt">Compare</span>
+              </button>
             </div>
-          </div>
-          <div class="tool-compare" id="toolCompareBar" hidden>
-            <p class="tool-compare__label">Scenario B</p>
-            <div class="chip-row chip-row--dest" id="compareDestChips" role="group" aria-label="Compare destination"></div>
           </div>
           <div class="tool-verdicts__sum" id="verdictSum" data-app aria-busy="true"></div>
         </div>
@@ -130,7 +133,25 @@
         </ol>
       </aside>
     </div>
+
+    <section class="tool-compare-panel" id="toolComparePanel" hidden aria-labelledby="compare-panel-title">
+      <header class="tool-compare-panel__head">
+        <h2 id="compare-panel-title">Compare scenarios</h2>
+        <div class="tool-compare-panel__b">
+          <p class="tool-compare-panel__label">Scenario B</p>
+          <div class="chip-row chip-row--dest" id="compareDestChips" role="group" aria-label="Compare destination"></div>
+        </div>
+      </header>
+      <div class="tool-compare-table-wrap" id="toolCompareTableWrap" data-app aria-busy="true"></div>
     </section>
+    </section>
+
+    <div class="tool-coach" id="toolCoach" hidden>
+      <p class="tool-coach__text"><span class="tool-coach__n">1</span> Pick a destination · <span class="tool-coach__n">2</span> Drag gravity · <span class="tool-coach__n">3</span> Tap a rule for evidence</p>
+      <button type="button" class="icon-btn tool-coach__close" id="toolCoachDismiss" aria-label="Dismiss tips">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
 
     <p class="tool-foot faint small"><a href="method#context">Why ISS rules do not carry over</a> · <a href="method#si">Verdicts are rules, not model output</a></p>
   </div>

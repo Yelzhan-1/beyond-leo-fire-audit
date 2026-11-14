@@ -15,8 +15,8 @@ if (!process.env.BLFA_URL) {
 const shots = [
   ['index-default-dark', '/', 1440, 1000, 'dark'],
   ['index-default-light', '/', 1440, 1000, 'light'],
-  ['index-compare-desktop', '/?d=moon&cmp=iss', 1440, 1000, 'dark', 'compare'],
-  ['index-compare-mobile', '/?d=moon&cmp=iss', 390, 844, 'dark', 'compare'],
+  ['index-compare-desktop', '/?d=mars&cmp=iss', 1440, 1000, 'dark', 'compare', 'tall'],
+  ['index-compare-mobile', '/?d=mars&cmp=iss', 390, 844, 'dark', 'compare'],
   ['index-mobile-default-dark', '/', 390, 844, 'dark'],
   ['index-mobile-default-light', '/', 390, 844, 'light'],
   ['index-share-toast', '/?d=moon', 1440, 1000, 'dark', 'share'],
@@ -31,6 +31,7 @@ try {
     const h = row[3];
     const theme = row[4];
     const action = row[5];
+    const variant = row[6];
     const page = await browser.newPage();
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
     await page.goto(base + path, { waitUntil: 'networkidle0', timeout: 90000 });
@@ -46,9 +47,12 @@ try {
       }
       try { localStorage.setItem('blfa-coach-dismissed', '1'); } catch (e) { /* */ }
     }, theme);
-    await page.waitForSelector('#toolVerdicts .verdict-list__item, #toolVerdicts .verdict-compare__row', { timeout: 15000 }).catch(() => {});
+    await page.waitForSelector('#toolVerdicts .verdict-list__item', { timeout: 15000 }).catch(() => {});
     if (action === 'compare') {
-      await page.waitForSelector('.verdict-compare__row', { timeout: 15000 }).catch(() => {});
+      await page.waitForSelector('.compare-table tbody tr', { timeout: 15000 }).catch(() => {});
+      await page.evaluate(() => {
+        document.getElementById('toolComparePanel')?.scrollIntoView({ block: 'start' });
+      });
     }
     if (action === 'share') {
       await page.evaluate(() => {
@@ -57,7 +61,7 @@ try {
       await page.waitForSelector('#toolToast:not([hidden])', { timeout: 5000 }).catch(() => {});
     }
     const file = `${outDir}/pr3-${name}.png`;
-    await page.screenshot({ path: file, fullPage: false });
+    await page.screenshot({ path: file, fullPage: variant === 'tall' });
     console.log('wrote', file);
     await page.close();
   }
@@ -70,7 +74,7 @@ try {
       dest: 'moon',
       envId: 'lander',
       subtitle: 'Lunar lander or habitat',
-      siteUrl: window.location.host
+      siteUrl: /localhost|127\.0\.0\.1/i.test(window.location.origin) ? 'https://blfa-wip.vercel.app' : window.location.origin
     });
     const cv = document.createElement('canvas');
     if (document.fonts && document.fonts.ready) await document.fonts.ready;

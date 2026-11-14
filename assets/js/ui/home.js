@@ -139,7 +139,6 @@ BLFA.boot(function (A) {
   function toggleCompare(on) {
     state.compareOn = !!on;
     $('toolCompare').setAttribute('aria-pressed', state.compareOn ? 'true' : 'false');
-    $('toolCompareBar').hidden = !state.compareOn;
     if (state.compareOn && !state.compareLive) refreshCompareLive(state.compareDest || 'iss');
     if (!state.compareOn) {
       state.compareLive = null;
@@ -163,46 +162,43 @@ BLFA.boot(function (A) {
     return window.matchMedia && window.matchMedia('(min-width: 1024px)').matches;
   }
 
-  function gravitySliderBits() {
-    return tickMarksHtml() + tickLabelsHtml();
-  }
-
   function tickMarksHtml() {
-    return '<div class="tool-slider__ticks" aria-hidden="true">' + S.GRAVITY_TICKS.map(function () {
-      return '<span class="tool-slider__tick"></span>';
+    return '<div class="tool-slider__ticks tool-slider__ticks--above" aria-hidden="true">' + S.GRAVITY_TICKS.map(function (_, i) {
+      var mid = i === 1 || i === 2;
+      return '<span class="tool-slider__tick' + (mid ? ' tool-slider__tick--mid' : '') + '"></span>';
     }).join('') + '</div>';
   }
 
   function tickLabelsHtml() {
     return '<div class="tool-slider__tick-labels mono faint" aria-hidden="true">' +
-      S.GRAVITY_TICK_LABELS.map(function () { return '<span class="tool-slider__tick-label"></span>'; }).join('') +
+      S.GRAVITY_TICK_LABELS.map(function (t, i) {
+        var extra = i === 0 ? ' tool-slider__tick-label--start' : (i === 3 ? ' tool-slider__tick-label--end' : ' tool-slider__tick-label--mid');
+        return '<span class="tool-slider__tick-label' + extra + '" data-tick="' + i + '"></span>';
+      }).join('') +
       '</div>';
   }
 
   function positionGravityTicks(root) {
     if (!root) return;
     var min = S.SLIDER.g.min, max = S.SLIDER.g.max;
-    var mobile = !!root.closest('.tool-mobile-g');
-    var narrow = mobile || (root.offsetWidth > 0 && root.offsetWidth < 360);
     var tickWrap = root.querySelector('.tool-slider__ticks');
     if (tickWrap) {
       [].forEach.call(tickWrap.querySelectorAll('.tool-slider__tick'), function (el, i) {
         var t = S.GRAVITY_TICKS[i];
         if (t == null) return;
         el.style.setProperty('left', ((t - min) / (max - min) * 100) + '%');
+        if (i === 1 || i === 2) el.setAttribute('title', S.GRAVITY_TICK_LABELS[i].title);
       });
     }
     var labWrap = root.querySelector('.tool-slider__tick-labels');
     if (labWrap) {
-      labWrap.classList.toggle('tool-slider__tick-labels--stagger', narrow);
       [].forEach.call(labWrap.querySelectorAll('.tool-slider__tick-label'), function (el, i) {
         var t = S.GRAVITY_TICK_LABELS[i];
         if (!t) return;
         var pct = (t.g - min) / (max - min) * 100;
         var transform = 'translateX(-50%)';
-        if (pct <= 6) transform = 'translateX(0)';
-        else if (pct >= 94) transform = 'translateX(-100%)';
-        el.classList.toggle('tool-slider__tick-label--lower', i === 1 || i === 3);
+        if (i === 0) transform = 'translateX(0)';
+        else if (i === 3) transform = 'translateX(-100%)';
         el.textContent = t.short;
         el.setAttribute('title', t.title);
         el.style.setProperty('left', pct + '%');
@@ -215,12 +211,13 @@ BLFA.boot(function (A) {
     var labels = { g: 'Gravity', p: 'Pressure', o2: 'Oxygen' };
     var b = S.SLIDER[key];
     var val = key === 'g' ? B.gText(e.g) : (key === 'p' ? A.fmt(e.p, 1) + ' kPa' : B.o2Text(e.o2));
-    return '<label class="tool-slider" data-key="' + key + '"><span class="tool-slider__label">' + esc(labels[key]) + '</span>' +
-      '<span class="tool-slider__val mono num">' + esc(val) + '</span>' +
-      (key === 'g' ? gravitySliderBits() : '') +
-      '<input type="range" id="sl-' + key + '" value="' + e[key] + '" min="' + b.min + '" max="' + b.max + '" step="' + b.step + '"' +
-      ' aria-valuetext="' + esc(ariaValText(key, e)) + '" aria-labelledby="' + esc(labelId) + ' sl-' + key + '">' +
-      '</label>';
+    var input = '<input type="range" id="sl-' + key + '" value="' + e[key] + '" min="' + b.min + '" max="' + b.max + '" step="' + b.step + '"' +
+      ' aria-valuetext="' + esc(ariaValText(key, e)) + '" aria-labelledby="' + esc(labelId) + ' sl-' + key + '">';
+    var gBits = key === 'g'
+      ? '<div class="tool-slider__tick-rail">' + tickMarksHtml() + input + '</div>' + tickLabelsHtml()
+      : input;
+    return '<label class="tool-slider' + (key === 'g' ? ' tool-slider--g' : '') + '" data-key="' + key + '"><span class="tool-slider__label">' + esc(labels[key]) + '</span>' +
+      '<span class="tool-slider__val mono num">' + esc(val) + '</span>' + gBits + '</label>';
   }
 
   function bindSliders() {
@@ -316,6 +313,56 @@ BLFA.boot(function (A) {
     }).join('');
   }
 
+  function compareSubtitle(env, envId, dest) {
+    return S.scenarioSubtitle({
+      envId: envId,
+      dest: dest,
+      env: env,
+      fmtG: scenarioFmt().fmtG,
+      fmtP: scenarioFmt().fmtP,
+      fmtO2: function (o) { return B.o2Text(o); }
+    });
+  }
+
+  function renderCompareTable() {
+    var panel = $('toolComparePanel');
+    var wrap = $('toolCompareTableWrap');
+    if (!panel || !wrap) return;
+    panel.hidden = !state.compareOn;
+    if (!state.compareOn || !state.compareLive) {
+      wrap.innerHTML = '';
+      return;
+    }
+    var e = currentEnv();
+    var bEnv = state.compareLive;
+    var aName = envSubtitle(e);
+    var bName = compareSubtitle(bEnv, state.compareEnvId, state.compareDest);
+    var rows = '';
+    A.ROWS.forEach(function (r, idx) {
+      var va = A.evaluate(r.id, e);
+      var vb = A.evaluate(r.id, bEnv);
+      var diff = va.status !== vb.status;
+      var num = 'R' + (idx < 9 ? '0' : '') + (idx + 1);
+      rows += '<tr class="compare-table__row' + (diff ? ' compare-table__row--diff' : '') + '">' +
+        '<th scope="row" class="compare-table__rule-cell">' +
+        '<button type="button" class="compare-table__rule" data-row="' + r.id + '">' +
+        '<span class="mono faint compare-table__id">' + num + '</span> <span class="compare-table__name">' + esc(r.short) + '</span></button></th>' +
+        '<td class="compare-table__a" data-col="A"><span class="compare-table__mob-label mono faint">A · ' + esc(aName) + '</span>' + B.verdict(va.status, true) + '</td>' +
+        '<td class="compare-table__b" data-col="B"><span class="compare-table__mob-label mono faint">B · ' + esc(bName) + '</span>' + B.verdict(vb.status, true) + '</td>' +
+        '<td class="compare-table__chg">' + (diff ? '<span class="compare-table__changed">changed</span>' : '<span class="compare-table__same faint" aria-hidden="true">—</span>') + '</td></tr>';
+    });
+    wrap.innerHTML =
+      '<table class="compare-table">' +
+      '<caption class="visually-hidden">Verdict comparison between ' + esc(aName) + ' and ' + esc(bName) + '</caption>' +
+      '<thead><tr>' +
+      '<th scope="col">Rule</th>' +
+      '<th scope="col" class="compare-table__head-a">A · ' + esc(aName) + '</th>' +
+      '<th scope="col" class="compare-table__head-b">B · ' + esc(bName) + '</th>' +
+      '<th scope="col"><span class="visually-hidden">Changed</span></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+    wrap.removeAttribute('aria-busy');
+  }
+
   function renderVerdicts() {
     var e = currentEnv(), sum = A.summary(e);
     var sumEl = $('verdictSum');
@@ -333,47 +380,20 @@ BLFA.boot(function (A) {
     sumEl.dataset.counts = JSON.stringify(sum.counts);
 
     var listEl = $('toolVerdicts');
-    if (state.compareOn && state.compareLive) {
-      var bEnv = state.compareLive;
-      var aSub = envSubtitle(e);
-      var bSub = S.scenarioSubtitle({
-        envId: state.compareEnvId,
-        dest: state.compareDest,
-        env: bEnv,
-        fmtG: scenarioFmt().fmtG,
-        fmtP: scenarioFmt().fmtP,
-        fmtO2: function (o) { return B.o2Text(o); }
-      });
-      var rows = '<li class="verdict-compare__head" aria-hidden="true"><span>Rule</span>' +
-        '<span class="verdict-compare__cols"><span class="mono faint">' + esc(aSub) + '</span><span class="mono faint">' + esc(bSub) + '</span></span></li>';
-      A.ROWS.forEach(function (r, idx) {
-        var va = A.evaluate(r.id, e);
-        var vb = A.evaluate(r.id, bEnv);
-        var diff = va.status !== vb.status ? ' verdict-compare__row--diff' : '';
-        rows += '<li class="verdict-compare__row' + diff + ' v-' + va.status + '">' +
-          '<button type="button" class="verdict-list__rule" data-row="' + r.id + '" title="' + esc(r.short) + '">' +
-          '<span class="mono faint">R' + (idx < 9 ? '0' : '') + (idx + 1) + '</span> ' + esc(r.short) + '</button>' +
-          '<span class="verdict-compare__cols" role="group" aria-label="A versus B">' +
-          '<span class="verdict-compare__cell" title="' + esc(aSub) + '">' + B.verdict(va.status, true) + '</span>' +
-          '<span class="verdict-compare__cell" title="' + esc(bSub) + '">' + B.verdict(vb.status, true) + '</span></span></li>';
-      });
-      listEl.className = 'verdict-list verdict-list--compare';
-      listEl.innerHTML = rows;
-    } else {
-      var rows = '';
-      A.ROWS.forEach(function (r, idx) {
-        var v = A.evaluate(r.id, e);
-        var flash = prevStatuses[r.id] && prevStatuses[r.id] !== v.status ? ' verdict-list__item--flash' : '';
-        prevStatuses[r.id] = v.status;
-        rows += '<li class="verdict-list__item v-' + v.status + flash + '">' +
-          '<button type="button" class="verdict-list__rule" data-row="' + r.id + '" title="' + esc(r.short) + '">' +
-          '<span class="mono faint">R' + (idx < 9 ? '0' : '') + (idx + 1) + '</span> ' + esc(r.short) + '</button>' +
-          '<span class="verdict-list__link">' + B.verdict(v.status, true) + '</span></li>';
-      });
-      listEl.className = 'verdict-list';
-      listEl.innerHTML = rows;
-    }
+    var rows = '';
+    A.ROWS.forEach(function (r, idx) {
+      var v = A.evaluate(r.id, e);
+      var flash = prevStatuses[r.id] && prevStatuses[r.id] !== v.status ? ' verdict-list__item--flash' : '';
+      prevStatuses[r.id] = v.status;
+      rows += '<li class="verdict-list__item v-' + v.status + flash + '">' +
+        '<button type="button" class="verdict-list__rule" data-row="' + r.id + '" title="' + esc(r.short) + '">' +
+        '<span class="mono faint">R' + (idx < 9 ? '0' : '') + (idx + 1) + '</span> ' + esc(r.short) + '</button>' +
+        '<span class="verdict-list__link">' + B.verdict(v.status, true) + '</span></li>';
+    });
+    listEl.className = 'verdict-list';
+    listEl.innerHTML = rows;
     listEl.removeAttribute('aria-busy');
+    renderCompareTable();
   }
 
   function renderStage() {
@@ -396,7 +416,6 @@ BLFA.boot(function (A) {
     renderDestinations();
     renderPresets();
     renderCompareDest();
-    $('toolCompareBar').hidden = !state.compareOn;
     $('toolCompare').setAttribute('aria-pressed', state.compareOn ? 'true' : 'false');
     if (!skipSliders) renderSliders(); else bindSliders();
     renderVerdicts();
@@ -444,10 +463,12 @@ BLFA.boot(function (A) {
     var btn = ev.target.closest('[data-env]');
     if (btn) pickEnv(btn.getAttribute('data-env'));
   });
-  $('toolVerdicts').addEventListener('click', function (ev) {
+  function onRuleClick(ev) {
     var btn = ev.target.closest('[data-row]');
     if (btn) openDrawer(btn.getAttribute('data-row'));
-  });
+  }
+  $('toolVerdicts').addEventListener('click', onRuleClick);
+  $('toolCompareTableWrap').addEventListener('click', onRuleClick);
 
   (function syncAdjustPanel() {
     var d = $('toolAdjust');
@@ -507,6 +528,12 @@ BLFA.boot(function (A) {
     showToast('Copy this link', url);
   }
 
+  function reportSiteUrl() {
+    var o = window.location.origin || '';
+    if (/localhost|127\.0\.0\.1/i.test(o)) return 'https://blfa-wip.vercel.app';
+    return o;
+  }
+
   function downloadReport() {
     if (!RPT) return;
     var e = currentEnv();
@@ -514,7 +541,8 @@ BLFA.boot(function (A) {
       dest: state.dest,
       envId: state.envId,
       subtitle: envSubtitle(e),
-      siteUrl: window.location.host || 'beyond-leo-fire-audit'
+      scenarioLine: B.gText(e.g) + ' · ' + A.fmt(e.p, 1) + ' kPa · ' + B.o2Text(e.o2),
+      siteUrl: reportSiteUrl()
     });
     var cv = document.createElement('canvas');
     var theme = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -536,17 +564,32 @@ BLFA.boot(function (A) {
     if (btn) refreshCompareLive(btn.getAttribute('data-cmp-dest'));
   });
 
+  function placeCoach() {
+    var coach = $('toolCoach');
+    if (!coach) return;
+    var desktop = isDesktopTool();
+    var slot = desktop ? $('toolCoachSlotTop') : $('toolCoachSlotMobile');
+    if (slot && coach.parentElement !== slot) slot.appendChild(coach);
+  }
+
   (function initCoach() {
     var coach = $('toolCoach');
     var key = 'blfa-coach-dismissed';
     if (!coach) return;
     try {
       if (localStorage.getItem(key) === '1') return;
+      placeCoach();
       coach.hidden = false;
       $('toolCoachDismiss').addEventListener('click', function () {
         coach.hidden = true;
         try { localStorage.setItem(key, '1'); } catch (e) { /* */ }
       });
+      if (window.matchMedia) {
+        var mq = window.matchMedia('(min-width: 1024px)');
+        var onMq = function () { if (!coach.hidden) placeCoach(); };
+        if (mq.addEventListener) mq.addEventListener('change', onMq);
+        else if (mq.addListener) mq.addListener(onMq);
+      }
     } catch (e) {
       coach.hidden = true;
     }
