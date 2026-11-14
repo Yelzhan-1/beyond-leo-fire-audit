@@ -6,20 +6,24 @@ const outDir = '/opt/cursor/artifacts';
 mkdirSync(outDir, { recursive: true });
 
 const shots = [
-  ['index-g1-dark', '/?d=iss&g=1&p=101.3&o2=21', 1440, 1000, 'dark'],
-  ['index-g1-light', '/?d=iss&g=1&p=101.3&o2=21', 1440, 1000, 'light'],
-  ['index-g038-dark', '/?d=mars&g=0.38&p=56.5&o2=34', 1440, 1000, 'dark'],
-  ['index-g038-light', '/?d=mars&g=0.38&p=56.5&o2=34', 1440, 1000, 'light'],
-  ['index-g0-dark', '/?d=iss&g=0&p=101.3&o2=21', 1440, 1000, 'dark'],
-  ['index-g0-light', '/?d=iss&g=0&p=101.3&o2=21', 1440, 1000, 'light'],
+  ['index-default-dark', '/', 1440, 1000, 'dark'],
+  ['index-default-light', '/', 1440, 1000, 'light'],
+  ['index-g0-dark', '/?d=custom&g=0', 1440, 1000, 'dark'],
+  ['index-g0-light', '/?d=custom&g=0', 1440, 1000, 'light'],
+  ['index-mobile-default-dark', '/', 390, 844, 'dark'],
   ['index-drawer-desktop', '/?d=moon&row=mat#evidence-panel', 1440, 1000, 'dark'],
-  ['index-drawer-mobile', '/?d=moon&row=mat#evidence-panel', 390, 844, 'dark'],
-  ['audit-drawer-desktop', '/audit?env=lander&row=mat#evidence-panel', 1440, 1000, 'dark'],
+  ['audit-drawer-cell-desktop', '/audit?env=lander&row=vent', 1440, 1000, 'dark', 'click-cell'],
 ];
 
 const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
 try {
-  for (const [name, path, w, h, theme] of shots) {
+  for (const row of shots) {
+    const name = row[0];
+    const path = row[1];
+    const w = row[2];
+    const h = row[3];
+    const theme = row[4];
+    const action = row[5];
     const page = await browser.newPage();
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
     await page.goto(base + path, { waitUntil: 'networkidle0', timeout: 90000 });
@@ -34,7 +38,11 @@ try {
         document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0B0E14');
       }
     }, theme);
-    if (path.includes('drawer') || path.includes('evidence-panel')) {
+    if (action === 'click-cell') {
+      await page.waitForSelector('#matrix .cell', { timeout: 15000 });
+      await page.click('#matrix .cell[data-env="lander"][data-row="vent"]');
+      await page.waitForSelector('#detail-heading', { timeout: 15000 });
+    } else if (path.includes('evidence-panel') || name.includes('drawer')) {
       await page.waitForSelector('#detail-heading', { timeout: 15000 }).catch(() => {});
     } else {
       await page.waitForSelector('#toolVerdicts .verdict-list__item', { timeout: 15000 }).catch(() => {});
