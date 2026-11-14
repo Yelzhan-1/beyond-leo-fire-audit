@@ -4,17 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Evidence and sources | Beyond LEO Fire Audit</title>
-<meta name="description" content="Browse and filter the NASA experiments, evidence records and sources behind every verdict, or search the audit by rule and cabin.">
+<meta name="description" content="NASA experiments, evidence records and sources behind every audit verdict. Search by rule and cabin.">
+<meta property="og:title" content="Evidence and sources | Beyond LEO Fire Audit">
+<meta property="og:description" content="NASA experiments, evidence records and sources behind every audit verdict. Search by rule and cabin.">
 <!-- partial:head -->
 <meta name="theme-color" content="#070a10">
 <meta name="color-scheme" content="dark light">
 <meta name="generator" content="Hand-written HTML, CSS and JavaScript. Text, data records and code were drafted with AI assistance (Claude by Anthropic).">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/og.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Beyond LEO Fire Audit">
+<meta property="og:image" content="/assets/img/og.png">
+<meta property="og:image:alt" content="Beyond LEO Fire Audit — flame mark and title">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="/assets/img/og.png">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/pages.css">
-<script>document.documentElement.classList.add("js");try{var t=localStorage.getItem("blfa-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="assets/js/theme-boot.js"></script>
 <script src="assets/js/ui/nav.js" defer></script>
 <!-- /partial:head -->
 </head>
@@ -50,19 +59,18 @@
 </header>
 <!-- /partial:header -->
 <main id="main">
-  <section class="band" data-theme="dark" aria-labelledby="page-title">
-    <div class="wrap band__inner">
-      <div>
-        <p class="kicker kicker--brand">Evidence and sources</p>
-        <h1 id="page-title">What NASA measured, and where to read it</h1>
-        <p class="lede">Every verdict in the audit rests on cited records. Search by rule and cabin, browse the experiments, filter the evidence records or open a source.</p>
+  <section class="band band--tight" data-theme="dark" aria-labelledby="page-title">
+    <div class="wrap band__inner band__inner--single">
+      <div class="page-hero">
+        <h1 id="page-title">What NASA measured</h1>
+        <p class="lede">Search, browse experiments, or filter the records behind each verdict.</p>
+        <nav class="cluster jump--compact" aria-label="On this page">
+          <a href="#search">Search</a>
+          <a href="#experiments">Experiments</a>
+          <a href="#records">Records</a>
+          <a href="#sources">Sources</a>
+        </nav>
       </div>
-      <nav class="jump" aria-label="On this page">
-        <a class="jump__item" href="#search"><span class="kicker">Ask</span><b>Search the audit</b></a>
-        <a class="jump__item" href="#experiments"><span class="kicker" id="jc-exp">Browse</span><b>Experiments</b></a>
-        <a class="jump__item" href="#records"><span class="kicker" id="jc-rec">Filter</span><b>Evidence records</b></a>
-        <a class="jump__item" href="#sources"><span class="kicker" id="jc-src">Cite</span><b>Sources</b></a>
-      </nav>
     </div>
   </section>
 

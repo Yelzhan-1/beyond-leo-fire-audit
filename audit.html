@@ -4,17 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Audit table | Beyond LEO Fire Audit</title>
-<meta name="description" content="Ten ISS-era fire-safety rules against six cabins: the ISS, an Orion-class capsule, a lunar lander, a pressurized rover, a Mars habitat and a cabin you build. Every verdict links to NASA evidence.">
+<meta name="description" content="Ten ISS-era fire-safety rules against six cabins. Open any cell for NASA evidence behind the verdict.">
+<meta property="og:title" content="Audit table | Beyond LEO Fire Audit">
+<meta property="og:description" content="Ten ISS-era fire-safety rules against six cabins. Open any cell for NASA evidence behind the verdict.">
 <!-- partial:head -->
 <meta name="theme-color" content="#070a10">
 <meta name="color-scheme" content="dark light">
 <meta name="generator" content="Hand-written HTML, CSS and JavaScript. Text, data records and code were drafted with AI assistance (Claude by Anthropic).">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/og.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Beyond LEO Fire Audit">
+<meta property="og:image" content="/assets/img/og.png">
+<meta property="og:image:alt" content="Beyond LEO Fire Audit — flame mark and title">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="/assets/img/og.png">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/pages.css">
-<script>document.documentElement.classList.add("js");try{var t=localStorage.getItem("blfa-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="assets/js/theme-boot.js"></script>
 <script src="assets/js/ui/nav.js" defer></script>
 <!-- /partial:head -->
 </head>
@@ -50,92 +59,90 @@
 </header>
 <!-- /partial:header -->
 <main id="main">
-  <section class="band" data-theme="dark" aria-labelledby="page-title">
-    <div class="wrap band__inner">
-      <div class="band__text">
-        <p class="kicker kicker--brand">Audit table</p>
+  <section class="band band--tight" data-theme="dark" aria-labelledby="page-title">
+    <div class="wrap band__inner band__inner--single">
+      <div class="page-hero">
         <h1 id="page-title">Which ISS fire rules still hold beyond Earth orbit?</h1>
-        <p class="lede">Ten rules of thumb from the ISS era, checked against six cabins. Pick a cabin to see how many rules break, then open any cell for the NASA evidence behind it.</p>
-      </div>
-      <div class="readout" id="readout" aria-live="polite" data-app aria-busy="true">
-        <div class="skeleton" role="status"><span class="visually-hidden">Loading the selected cabin</span><i></i><i></i><i></i></div>
+        <p class="lede">Pick a cabin, open a cell, read the NASA evidence behind each verdict.</p>
       </div>
     </div>
   </section>
 
   <div class="wrap audit">
-    <noscript><div class="state state--error"><h3>This page needs JavaScript</h3><p>The audit table is computed in your browser from the evidence in the page scripts. The same verdicts and records are available without it in <a href="evidence.json">evidence.json</a>.</p></div></noscript>
+    <noscript><div class="state state--error"><h3>This page needs JavaScript</h3><p>Verdicts are in <a href="evidence.json">evidence.json</a>.</p></div></noscript>
 
     <section class="audit__section" aria-labelledby="matrix-title">
-      <div class="sec-head">
+      <div class="sec-head sec-head--tight">
         <h2 id="matrix-title">Rules by cabin</h2>
-        <p>Select a column header to choose a cabin. Select a cell to open its evidence below.</p>
       </div>
-      <ul class="legend" id="legend" aria-label="How to read the verdicts"></ul>
-
+      <ul class="legend legend--compact" id="legend" aria-label="Verdict key"></ul>
+      <div id="readout" class="readout readout--inline" aria-live="polite" data-app aria-busy="true">
+        <div class="skeleton" role="status"><span class="visually-hidden">Loading cabin</span><i></i><i></i></div>
+      </div>
       <div class="cabin-picker" id="picker" role="group" aria-label="Choose a cabin"></div>
-
-      <div class="board">
-        <div class="matrix-scroll" id="matrix" role="region" aria-label="Audit table: ten rules against six cabins" tabindex="0" data-app aria-busy="true">
-          <div class="skeleton" role="status"><span class="visually-hidden">Loading the audit table</span><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="board board--matrix">
+        <div class="matrix-scroll" id="matrix" role="region" aria-label="Audit table" tabindex="0" data-app aria-busy="true">
+          <div class="skeleton" role="status"><span class="visually-hidden">Loading table</span><i></i><i></i><i></i></div>
         </div>
-        <p class="scroll-hint">Scroll the table sideways to see every cabin.</p>
+        <p class="scroll-hint">Scroll sideways for every cabin.</p>
       </div>
     </section>
 
-    <section class="audit__section" aria-labelledby="builder-title">
-      <div class="builder" id="builder">
-        <div class="builder__intro">
-          <h2 id="builder-title">Build your own cabin</h2>
-          <p class="muted small">The last column of the table recalculates as you move these. Oxygen partial pressure: <span id="ppO2" class="num mono"></span>.</p>
-        </div>
-        <div class="field">
-          <span class="label" id="lab-g">Gravity</span>
-          <div class="seg" role="radiogroup" aria-labelledby="lab-g">
-            <input type="radio" name="cg" id="cg0" value="0"><label for="cg0">0 g</label>
-            <input type="radio" name="cg" id="cg16" value="0.16"><label for="cg16">Moon</label>
-            <input type="radio" name="cg" id="cg38" value="0.38"><label for="cg38">Mars</label>
+    <details class="disclosure disclosure--section">
+      <summary>Build your own cabin</summary>
+      <div class="disclosure__body">
+        <div class="builder" id="builder">
+          <p class="muted small">The custom column recalculates as you move these. Oxygen partial pressure: <span id="ppO2" class="num mono"></span>.</p>
+          <div class="field">
+            <span class="label" id="lab-g">Gravity</span>
+            <div class="seg" role="radiogroup" aria-labelledby="lab-g">
+              <input type="radio" name="cg" id="cg0" value="0"><label for="cg0">0 g</label>
+              <input type="radio" name="cg" id="cg16" value="0.16"><label for="cg16">Moon</label>
+              <input type="radio" name="cg" id="cg38" value="0.38"><label for="cg38">Mars</label>
+            </div>
+          </div>
+          <div class="field">
+            <label for="cV">Cabin volume <output id="oV" for="cV" aria-live="off"></output></label>
+            <input type="range" id="cV" min="0" max="1000" step="1">
+          </div>
+          <div class="field">
+            <label for="cP">Pressure <output id="oP" for="cP" aria-live="off"></output></label>
+            <input type="range" id="cP" min="30" max="101.3" step="0.1">
+          </div>
+          <div class="field">
+            <label for="cO">Oxygen <output id="oO" for="cO" aria-live="off"></output></label>
+            <input type="range" id="cO" min="15" max="40" step="0.5">
+          </div>
+          <div class="builder__checks">
+            <label class="check" for="cDust"><input type="checkbox" id="cDust"> Planetary dust gets inside</label>
+            <label class="check" for="cBeyond"><input type="checkbox" id="cBeyond"> Beyond low Earth orbit</label>
           </div>
         </div>
-        <div class="field">
-          <label for="cV">Cabin volume <output id="oV" for="cV" aria-live="off"></output></label>
-          <input type="range" id="cV" min="0" max="1000" step="1">
-        </div>
-        <div class="field">
-          <label for="cP">Pressure <output id="oP" for="cP" aria-live="off"></output></label>
-          <input type="range" id="cP" min="30" max="101.3" step="0.1">
-        </div>
-        <div class="field">
-          <label for="cO">Oxygen <output id="oO" for="cO" aria-live="off"></output></label>
-          <input type="range" id="cO" min="15" max="40" step="0.5">
-        </div>
-        <div class="builder__checks">
-          <label class="check" for="cDust"><input type="checkbox" id="cDust"> Planetary dust gets inside</label>
-          <label class="check" for="cBeyond"><input type="checkbox" id="cBeyond"> Beyond low Earth orbit</label>
-        </div>
       </div>
-    </section>
+    </details>
 
-    <section class="audit__section" id="evidence-panel" aria-labelledby="detail-title">
-      <div class="sec-head">
-        <h2 id="detail-title">Evidence for the selected cell</h2>
-        <p>Each record names the experiment, its test conditions and where in the source the finding sits.</p>
+    <details class="disclosure disclosure--section">
+      <summary>What to read first for this cabin</summary>
+      <div class="disclosure__body grid grid--2 ranks" data-app aria-busy="true">
+        <div class="card" id="rankInv"><div class="skeleton" role="status"><span class="visually-hidden">Loading</span><i></i></div></div>
+        <div class="card" id="rankGap"><div class="skeleton" role="status"><span class="visually-hidden">Loading</span><i></i></div></div>
       </div>
-      <div id="detail" aria-live="polite" data-app aria-busy="true">
-        <div class="skeleton" role="status"><span class="visually-hidden">Loading evidence</span><i></i><i></i><i></i><i></i></div>
-      </div>
-    </section>
+    </details>
+  </div>
 
-    <section class="audit__section" aria-labelledby="rank-title">
-      <div class="sec-head">
-        <h2 id="rank-title">What to read first</h2>
-        <p>These lists follow the cabin you selected in the table.</p>
+  <div id="evidence-panel" class="ev-drawer" hidden aria-hidden="true">
+    <button type="button" class="ev-drawer__scrim" aria-label="Close evidence panel" data-drawer-close></button>
+    <div class="ev-drawer__sheet" role="dialog" aria-modal="true" aria-labelledby="detail-heading" tabindex="-1">
+      <div class="ev-drawer__bar">
+        <p class="ev-drawer__label" id="detail-title">Evidence</p>
+        <button type="button" class="icon-btn ev-drawer__close" aria-label="Close evidence panel" data-drawer-close>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
       </div>
-      <div class="grid grid--2 ranks" data-app aria-busy="true">
-        <div class="card" id="rankInv"><div class="skeleton" role="status"><span class="visually-hidden">Loading</span><i></i><i></i><i></i></div></div>
-        <div class="card" id="rankGap"><div class="skeleton" role="status"><span class="visually-hidden">Loading</span><i></i><i></i><i></i></div></div>
+      <div class="ev-drawer__body" id="detail" aria-live="polite" data-app aria-busy="true">
+        <div class="skeleton" role="status"><span class="visually-hidden">Loading evidence</span><i></i><i></i></div>
       </div>
-    </section>
+    </div>
   </div>
 </main>
 <!-- partial:footer -->

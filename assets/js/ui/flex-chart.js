@@ -3,6 +3,7 @@
   'use strict';
   var host = document.getElementById('flexCharts');
   if (!host) return;
+  var started = false;
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
 
@@ -86,15 +87,26 @@
     host.innerHTML = '<div class="state state--error" role="alert"><h3>NASA FLEX charts unavailable</h3><p>' + esc(msg) + '</p></div>';
   }
 
-  host.setAttribute('aria-busy', 'true');
-  Promise.all([
-    fetch('data/flex-002-d2-series.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('flex-002-d2-series.json HTTP ' + r.status); return r.json(); }),
-    fetch('data/flex-co2-burn-rate.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('flex-co2-burn-rate.json HTTP ' + r.status); return r.json(); }),
-  ]).then(function (all) {
-    host.removeAttribute('aria-busy');
-    host.innerHTML = '<div class="chart-grid">' + renderD2(all[0]) + renderCo2(all[1]) + '</div>';
-  }).catch(function (e) {
-    host.removeAttribute('aria-busy');
-    showError(e && e.message ? e.message : 'Load failed');
-  });
+  function loadCharts() {
+    if (started) return;
+    started = true;
+    host.setAttribute('aria-busy', 'true');
+    Promise.all([
+      fetch('data/flex-002-d2-series.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('flex-002-d2-series.json HTTP ' + r.status); return r.json(); }),
+      fetch('data/flex-co2-burn-rate.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw new Error('flex-co2-burn-rate.json HTTP ' + r.status); return r.json(); }),
+    ]).then(function (all) {
+      host.removeAttribute('aria-busy');
+      host.innerHTML = '<div class="chart-grid">' + renderD2(all[0]) + renderCo2(all[1]) + '</div>';
+    }).catch(function (e) {
+      host.removeAttribute('aria-busy');
+      showError(e && e.message ? e.message : 'Load failed');
+    });
+  }
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (en) {
+      if (en[0].isIntersecting) { loadCharts(); }
+    }, { rootMargin: '120px' }).observe(host);
+  } else {
+    loadCharts();
+  }
 })();
