@@ -55,7 +55,7 @@ a:hover { text-decoration-thickness: 2px; }
   border-radius: var(--r-1);
 }
 
-::selection { background: color-mix(in srgb, var(--link) 35%, transparent); }
+::selection { background: color-mix(in srgb, var(--brand) 35%, transparent); }
 
 code, kbd, samp { font-family: var(--font-mono); font-size: 0.9em; }
 .mono { font-family: var(--font-mono); }
