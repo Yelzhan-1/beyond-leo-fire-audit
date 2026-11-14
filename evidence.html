@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Evidence | Beyond LEO Fire Audit</title>
-<meta name="description" content="Work in progress.">
+<title>Evidence and sources | Beyond LEO Fire Audit</title>
+<meta name="description" content="Browse and filter the NASA experiments, evidence records and sources behind every verdict, or search the audit by rule and cabin.">
 <!-- partial:head -->
 <meta name="theme-color" content="#070a10">
 <meta name="color-scheme" content="dark light">
@@ -49,7 +49,84 @@
   </div>
 </header>
 <!-- /partial:header -->
-<main id="main"><div class="wrap section"><h1>Evidence</h1></div></main>
+<main id="main">
+  <section class="band" data-theme="dark" aria-labelledby="page-title">
+    <div class="wrap band__inner">
+      <div>
+        <p class="kicker kicker--brand">Evidence and sources</p>
+        <h1 id="page-title">What NASA measured, and where to read it</h1>
+        <p class="lede">Every verdict in the audit rests on cited records. Search by rule and cabin, browse the experiments, filter the evidence records or open a source.</p>
+      </div>
+      <nav class="jump" aria-label="On this page">
+        <a class="jump__item" href="#search"><span class="kicker">Ask</span><b>Search the audit</b></a>
+        <a class="jump__item" href="#experiments"><span class="kicker" id="jc-exp">Browse</span><b>Experiments</b></a>
+        <a class="jump__item" href="#records"><span class="kicker" id="jc-rec">Filter</span><b>Evidence records</b></a>
+        <a class="jump__item" href="#sources"><span class="kicker" id="jc-src">Cite</span><b>Sources</b></a>
+      </nav>
+    </div>
+  </section>
+
+  <div class="wrap evidence-page">
+    <noscript><div class="state state--error"><h3>This page needs JavaScript</h3><p>The lists are built in your browser from the audit data. The same records are in <a href="evidence.json">evidence.json</a>.</p></div></noscript>
+
+    <section id="search" aria-labelledby="search-title">
+      <div class="sec-head">
+        <h2 id="search-title">Search the audit</h2>
+        <p>The search runs in your browser and returns only verdicts and records from this site. It does not generate text.</p>
+      </div>
+      <div class="card ask">
+        <form id="askForm" role="search" class="ask__form">
+          <label class="visually-hidden" for="askQ">Question about a rule or a cabin</label>
+          <input class="input" type="search" id="askQ" placeholder="Name a rule and a cabin, for example: ventilation Mars" autocomplete="off">
+          <button class="btn btn--primary" type="submit">Search</button>
+        </form>
+        <div class="cluster ask__chips" id="askChips"></div>
+        <div class="ask__out" id="askOut" aria-live="polite" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading search</span><i></i><i></i><i></i></div></div>
+        <div class="si" id="si" hidden>
+          <p class="small muted" id="siStatus"></p>
+          <button class="btn btn--ghost btn--sm" type="button" id="siBtn">Explain these results with SI</button>
+          <div class="si__out" id="siOut" role="status" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="experiments" aria-labelledby="exp-title">
+      <div class="sec-head">
+        <h2 id="exp-title">Experiments</h2>
+        <p id="expCount">Where the evidence was measured. The counts and conditions are taken from the records in this audit.</p>
+      </div>
+      <div class="cluster filters" id="expFilters" role="group" aria-label="Filter experiments"></div>
+      <div class="grid grid--3 exps" id="expList" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading experiments</span><i></i><i></i><i></i></div></div>
+    </section>
+
+    <section id="records" aria-labelledby="rec-title">
+      <div class="sec-head">
+        <h2 id="rec-title">Evidence records</h2>
+        <p>Each record gives the finding, the conditions it was measured in, the investigation and the place in the source.</p>
+      </div>
+      <div class="filters filters--grid" id="recFilters" role="search" aria-label="Filter evidence records">
+        <div class="field"><label for="fQ">Text</label><input class="input" type="search" id="fQ" placeholder="Words in the finding or conditions" autocomplete="off"></div>
+        <div class="field"><label for="fRule">Rule</label><select class="select" id="fRule"></select></div>
+        <div class="field"><label for="fDir">Direction</label><select class="select" id="fDir"></select></div>
+        <div class="field"><label for="fBasis">Basis</label><select class="select" id="fBasis"></select></div>
+        <div class="field"><label for="fInv">Experiment</label><select class="select" id="fInv"></select></div>
+        <div class="field filters__reset"><button class="btn btn--ghost btn--sm" type="button" id="fReset">Reset filters</button></div>
+      </div>
+      <p class="small muted rec__count" id="recCount" role="status"></p>
+      <div id="recList" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading evidence records</span><i></i><i></i><i></i></div></div>
+    </section>
+
+    <section id="sources" aria-labelledby="src-title">
+      <div class="sec-head">
+        <h2 id="src-title">Sources</h2>
+        <p>Links open the publisher's page. Some publishers block automated checks, so if one does not open, search for its title.</p>
+      </div>
+      <div class="cluster filters" id="srcFilters" role="group" aria-label="Filter sources"></div>
+      <p class="small muted rec__count" id="srcCount" role="status"></p>
+      <ul class="src-list" id="srcList" data-app aria-busy="true"><li><div class="skeleton" role="status"><span class="visually-hidden">Loading sources</span><i></i><i></i><i></i></div></li></ul>
+    </section>
+  </div>
+</main>
 <!-- partial:footer -->
 <footer class="site-footer">
   <div class="wrap">
@@ -86,5 +163,12 @@
   </div>
 </footer>
 <!-- /partial:footer -->
+<script src="assets/js/data/sources.js" defer></script>
+<script src="assets/js/data/investigations.js" defer></script>
+<script src="assets/js/data/environments.js" defer></script>
+<script src="assets/js/engine.js" defer></script>
+<script src="assets/js/si.js" defer></script>
+<script src="assets/js/ui/common.js" defer></script>
+<script src="assets/js/ui/evidence.js" defer></script>
 </body>
 </html>

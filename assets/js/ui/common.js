@@ -80,10 +80,15 @@
   var DIR = { supports: 'Supports the rule', weakens: 'Weakens the rule', refutes: 'Contradicts the rule', open: 'Open question', context: 'Context' };
 
   /* One evidence record as an <li>. */
-  function evItem(ev) {
+  function evItem(ev, opts) {
     var A = root.AUDIT, inv = ev.inv ? A.INV[ev.inv] : null;
     var invHtml = inv ? '<span class="ev__inv">' + esc(inv.name) + ' ' + invLinks(inv) + '</span>' : '';
-    return '<li class="ev ev--' + ev.dir + '"><div class="ev__top"><span class="ev__dir">' + DIR[ev.dir] + '</span>' + invHtml + '<span class="ev__inv">' + esc(A.BASIS[ev.basis]) + '</span></div>' +
+    var ruleHtml = '';
+    if (opts && opts.rule === true) {
+      var idx = A.ROWS.indexOf(A.rowById(ev.row));
+      ruleHtml = '<a class="ev__rule" href="audit?row=' + encodeURIComponent(ev.row) + '#evidence-panel">Rule ' + (idx < 9 ? '0' : '') + (idx + 1) + ': ' + esc(A.rowById(ev.row).short) + '</a>';
+    }
+    return '<li class="ev ev--' + ev.dir + '"><div class="ev__top"><span class="ev__dir">' + DIR[ev.dir] + '</span>' + ruleHtml + invHtml + '<span class="ev__inv">' + esc(A.BASIS[ev.basis]) + '</span></div>' +
       '<p class="ev__find">' + esc(ev.finding) + '</p>' +
       '<p class="ev__meta">Conditions: ' + esc(ev.cond) + '. Source: ' + srcLinks([ev.src]) + ', ' + esc(ev.loc.charAt(0).toLowerCase() + ev.loc.slice(1)) + '.</p></li>';
   }
