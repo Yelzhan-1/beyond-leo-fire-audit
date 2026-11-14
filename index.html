@@ -4,17 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Beyond LEO Fire Audit | ISS fire rules, audited for Moon and Mars</title>
-<meta name="description" content="Ten ISS-era fire-safety rules of thumb checked against lunar and Martian cabins using NASA microgravity combustion experiments. 2026 NASA Space Apps Challenge, Flame in Freefall.">
+<meta name="description" content="Ten ISS-era fire-safety rules checked against lunar and Martian cabins using NASA microgravity combustion data.">
+<meta property="og:title" content="Beyond LEO Fire Audit">
+<meta property="og:description" content="Ten ISS-era fire-safety rules checked against lunar and Martian cabins using NASA microgravity combustion data.">
 <!-- partial:head -->
 <meta name="theme-color" content="#070a10">
 <meta name="color-scheme" content="dark light">
 <meta name="generator" content="Hand-written HTML, CSS and JavaScript. Text, data records and code were drafted with AI assistance (Claude by Anthropic).">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/og.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Beyond LEO Fire Audit">
+<meta property="og:image" content="/assets/img/og.png">
+<meta property="og:image:alt" content="Beyond LEO Fire Audit — flame mark and title">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="/assets/img/og.png">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/pages.css">
-<script>document.documentElement.classList.add("js");try{var t=localStorage.getItem("blfa-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="assets/js/theme-boot.js"></script>
 <script src="assets/js/ui/nav.js" defer></script>
 <!-- /partial:head -->
 </head>
@@ -52,82 +61,70 @@
 <main id="main">
   <section class="band hero" data-theme="dark" aria-labelledby="page-title">
     <div class="wrap band__inner">
-      <div>
-        <p class="kicker kicker--brand">2026 NASA Space Apps Challenge / Flame in Freefall</p>
-        <h1 id="page-title">Ten ISS <span class="nowrap">fire-safety</span> rules, audited for the Moon and Mars</h1>
-        <p class="lede">Every verdict is computed from NASA microgravity combustion experiments and the conditions inside the cabin: gravity, pressure, oxygen, volume and dust. Open a cell to read the evidence behind it.</p>
+      <div class="page-hero">
+        <h1 id="page-title">Ten ISS fire rules, audited for the Moon and Mars</h1>
+        <p class="lede">Every verdict comes from NASA microgravity combustion data and your cabin conditions—not from a language model.</p>
         <div class="cluster hero__cta">
           <a class="btn btn--primary" href="audit">Open the audit</a>
-          <a class="btn" href="evidence">Browse the evidence</a>
         </div>
       </div>
       <figure class="flames">
-        <canvas id="flameCanvas" role="img" aria-label="Four schematic flames: a blue sphere at zero gravity, growing taller and more yellow at lunar, Martian and Earth gravity."></canvas>
+        <canvas id="flameCanvas" role="img" aria-label="Four schematic flames at 0 g, lunar, Martian and Earth gravity."></canvas>
         <div class="flames__labels"><div><b>0 g</b><span>Orbit</span></div><div><b>0.16 g</b><span>Moon</span></div><div><b>0.38 g</b><span>Mars</span></div><div><b>1 g</b><span>Earth</span></div></div>
-        <figcaption>Schematic, not data. Without buoyancy a flame is a dim blue sphere. As gravity returns, hot gas rises and stretches it.</figcaption>
       </figure>
     </div>
   </section>
 
-  <div class="wrap home">
-    <noscript><div class="state state--error"><h3>The live numbers need JavaScript</h3><p>The pages still work as documents: read the <a href="method">method</a>, the <a href="evidence">evidence</a> or download <a href="evidence.json">evidence.json</a>. The interactive audit table needs JavaScript.</p></div></noscript>
+  <div class="wrap home home--calm">
+    <noscript><div class="state state--error"><h3>The live numbers need JavaScript</h3><p>Read the <a href="method">method</a>, <a href="evidence">evidence</a>, or <a href="evidence.json">evidence.json</a>. The audit table needs JavaScript.</p></div></noscript>
 
-    <section aria-labelledby="stats-title">
-      <h2 id="stats-title" class="visually-hidden">The audit in numbers</h2>
-      <div id="stats" class="stats" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading the audit</span><i></i><i></i><i></i></div></div>
-    </section>
-
-    <section aria-labelledby="why-title">
-      <div class="sec-head">
-        <h2 id="why-title">Why the ISS rules do not carry over</h2>
-        <p>Three things change when a fire leaves low Earth orbit. Each is backed by records you can open.</p>
-      </div>
-      <div class="grid grid--3">
-        <article class="card card--accent">
-          <h3>Gravity decides how a flame feeds</h3>
-          <p>In orbit there is no buoyancy, so the first response to a fire is to turn off the fans. With some gravity, hot gas rises and pulls fresh air in after it. NASA Glenn states that stopping ventilation is not an effective way to put out a fire in lunar or Martian gravity.</p>
-          <p><a href="audit?env=lander&amp;row=vent#evidence-panel">See the airflow rule on the Moon</a></p>
-        </article>
-        <article class="card card--accent">
-          <h3>Smoke and dust look alike</h3>
-          <p>On the station the detectors missed some smoke from common wire and insulation plastics. On the Moon, chamber tests with lunar regolith simulant show smoke and dust overlapping in particle size and setting off the detector.</p>
-          <p><a href="audit?env=rover&amp;row=dust#evidence-panel">See the false-alarm rule in the rover</a></p>
-        </article>
-        <article class="card card--accent">
-          <h3>The cabin is a different place</h3>
-          <p>NASA states that the lander, lunar habitat and pressurized rover nominally use 8.2 psia with 34% oxygen. Small volumes turn a rescue tool into a hazard: <span id="homeCo2">a CO&#8322; extinguisher discharged in a small cabin can exceed safe limits.</span></p>
-          <p><a href="calculators">Try the calculators</a></p>
-        </article>
-      </div>
-    </section>
-
-    <section aria-labelledby="map-title">
-      <div class="sec-head">
-        <h2 id="map-title">The audit at a glance</h2>
-        <p>Each cell is a link to the evidence behind it. Colour is never the only signal: every verdict also has an icon and a word.</p>
-      </div>
-      <ul class="legend" id="legend"></ul>
-      <div class="table-scroll heat-wrap" role="region" aria-label="Verdicts for ten rules in five preset cabins" tabindex="0" id="heat" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading the verdict map</span><i></i><i></i><i></i></div></div>
-      <div class="cluster"><a class="btn btn--primary btn--sm" href="audit">Open the full audit table</a><span class="small muted">The full table adds a cabin builder and the reason behind every verdict.</span></div>
-    </section>
-
-    <section aria-labelledby="how-title">
-      <div class="sec-head">
-        <h2 id="how-title">How to use it</h2>
-      </div>
-      <ol class="steps">
-        <li><b>1. Pick a cabin.</b> Five presets from agency sources, or build your own on the <a href="audit#builder">audit page</a>.</li>
-        <li><b>2. Read the verdicts.</b> Each of ten ISS-era rules is marked as holding, weakening, breaking or unknown for that cabin.</li>
-        <li><b>3. Check the evidence.</b> Every verdict lists the experiments and sources it rests on, with the place in each source. <a href="evidence">Browse them all</a>.</li>
+    <section class="home-focus" aria-labelledby="vf-title">
+      <h2 id="vf-title" class="visually-hidden">Verdicts across preset cabins</h2>
+      <div id="stats" class="stats stats--verdicts" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading verdict counts</span><i></i><i></i><i></i></div></div>
+      <ol class="steps steps--tight">
+        <li><b>Pick a cabin</b> — five agency presets or your own.</li>
+        <li><b>Read the verdicts</b> — holds, weakens, breaks, or unknown per rule.</li>
+        <li><b>Open the evidence</b> — NASA records and sources behind each cell.</li>
       </ol>
+      <p class="home-focus__cta"><a class="btn btn--primary" href="audit">Open the audit table</a></p>
     </section>
 
-    <section aria-labelledby="si-title">
-      <div class="callout">
-        <h2 id="si-title" class="callout__title">Verdicts are rules, not model output</h2>
-        <p>The verdict engine is plain deterministic code, so the same cabin always gives the same answer. An optional SI layer can explain search results from the records, and is off unless a service is configured. <a href="method#si">Where SI fits</a>.</p>
+    <details class="disclosure disclosure--section">
+      <summary>More context</summary>
+      <div class="disclosure__body stack-loose">
+        <section aria-labelledby="why-title">
+          <h2 id="why-title">Why ISS rules do not carry over</h2>
+          <div class="grid grid--3">
+            <article class="card">
+              <h3>Gravity feeds the flame</h3>
+              <p>Without buoyancy, shutting off fans is the first ISS response. NASA Glenn finds that is unreliable on the Moon and Mars.</p>
+              <p><a href="audit?env=lander&amp;row=vent#evidence-panel">Airflow rule on the Moon</a></p>
+            </article>
+            <article class="card">
+              <h3>Smoke and dust overlap</h3>
+              <p>Station detectors missed some plastics; lunar chamber tests show regolith can mimic smoke in the rover cabin.</p>
+              <p><a href="audit?env=rover&amp;row=dust#evidence-panel">False-alarm rule in the rover</a></p>
+            </article>
+            <article class="card">
+              <h3>Small cabins change tools</h3>
+              <p id="homeCo2">A CO&#8322; extinguisher in a small pressurized rover can exceed safe limits.</p>
+              <p><a href="calculators">Try the calculators</a></p>
+            </article>
+          </div>
+        </section>
+
+        <section aria-labelledby="map-title">
+          <h2 id="map-title">Audit at a glance</h2>
+          <ul class="legend legend--compact" id="legend" aria-label="Verdict colours"></ul>
+          <div class="table-scroll heat-wrap" role="region" aria-label="Verdict map" tabindex="0" id="heat" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading map</span><i></i><i></i><i></i></div></div>
+        </section>
+
+        <section aria-labelledby="si-title">
+          <h2 id="si-title">Verdicts are rules, not model output</h2>
+          <p class="measure muted">The engine is deterministic plain code. Optional AI can explain search results when configured—it never changes a verdict. <a href="method#si">Where SI fits</a>.</p>
+        </section>
       </div>
-    </section>
+    </details>
   </div>
 </main>
 <!-- partial:footer -->

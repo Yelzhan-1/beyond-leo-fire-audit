@@ -4,17 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Calculators | Beyond LEO Fire Audit</title>
-<meta name="description" content="Three numbers a cabin designer can check: CO2 extinguisher discharge, oxygen released by emergency masks, and carbon monoxide after a fire with scrubbing time.">
+<meta name="description" content="Three cabin checks: CO₂ extinguisher, emergency oxygen, and CO after a fire with scrubbing.">
+<meta property="og:title" content="Calculators | Beyond LEO Fire Audit">
+<meta property="og:description" content="Three cabin checks: CO₂ extinguisher, emergency oxygen, and CO after a fire with scrubbing.">
 <!-- partial:head -->
 <meta name="theme-color" content="#070a10">
 <meta name="color-scheme" content="dark light">
 <meta name="generator" content="Hand-written HTML, CSS and JavaScript. Text, data records and code were drafted with AI assistance (Claude by Anthropic).">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/og.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Beyond LEO Fire Audit">
+<meta property="og:image" content="/assets/img/og.png">
+<meta property="og:image:alt" content="Beyond LEO Fire Audit — flame mark and title">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="/assets/img/og.png">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/pages.css">
-<script>document.documentElement.classList.add("js");try{var t=localStorage.getItem("blfa-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="assets/js/theme-boot.js"></script>
 <script src="assets/js/ui/nav.js" defer></script>
 <!-- /partial:head -->
 </head>
@@ -50,12 +59,11 @@
 </header>
 <!-- /partial:header -->
 <main id="main">
-  <section class="band" data-theme="dark" aria-labelledby="page-title">
+  <section class="band band--tight" data-theme="dark" aria-labelledby="page-title">
     <div class="wrap band__inner band__inner--single">
-      <div>
-        <p class="kicker kicker--brand">Calculators</p>
+      <div class="page-hero">
         <h1 id="page-title">Three numbers a cabin designer can check</h1>
-        <p class="lede">The same formulas decide the extinguisher, mask and air verdicts in the audit table. Start from a cabin, then change the volume, pressure or oxygen level to see where a verdict flips.</p>
+        <p class="lede">Same formulas as the audit—move the sliders to see where a verdict flips.</p>
       </div>
     </div>
   </section>
@@ -73,32 +81,30 @@
     <div class="grid grid--3 calcs">
       <article class="card calc" aria-labelledby="calc1-title">
         <h2 id="calc1-title">Empty a CO&#8322; extinguisher</h2>
-        <p class="kicker">Respond rule: CO&#8322; extinguisher</p>
         <div class="field"><label for="kKg">CO&#8322; released <output id="okKg" for="kKg" aria-live="off"></output></label><input type="range" id="kKg" min="0.5" max="6" step="0.1"></div>
         <div id="c1" class="calc__out" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading</span><i></i><i></i><i></i></div></div>
-        <p class="calc__assume">The ISS unit holds 2.7 kg. Ideal gas at 23 &deg;C, mixed evenly through the cabin. Near the nozzle the level is higher. The FLEX figures are for CO&#8322; added to air at 1 atm.</p>
+        <details class="disclosure"><summary>Assumptions</summary><div class="disclosure__body"><p class="calc__assume">The ISS unit holds 2.7 kg. Ideal gas at 23 &deg;C, mixed evenly through the cabin. Near the nozzle the level is higher. The FLEX figures are for CO&#8322; added to air at 1 atm.</p></div></details>
       </article>
       <article class="card calc" aria-labelledby="calc2-title">
         <h2 id="calc2-title">Breathe from oxygen masks</h2>
-        <p class="kicker">Respond rule: oxygen masks</p>
         <div class="field"><label for="kL">Oxygen released into the cabin <output id="okL" for="kL" aria-live="off"></output></label><input type="range" id="kL" min="0" max="5000" step="50"></div>
         <div id="c2" class="calc__out" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading</span><i></i><i></i><i></i></div></div>
-        <p class="calc__assume">Litres are counted at 0 &deg;C and 1 atm. The oxygen is assumed to mix evenly and nothing is vented or scrubbed.</p>
+        <details class="disclosure"><summary>Assumptions</summary><div class="disclosure__body"><p class="calc__assume">Litres are counted at 0 &deg;C and 1 atm. The oxygen is assumed to mix evenly and nothing is vented or scrubbed.</p></div></details>
       </article>
       <article class="card calc" aria-labelledby="calc3-title">
         <h2 id="calc3-title">Clear the air after a fire</h2>
-        <p class="kicker">Recover rule: air after the fire</p>
         <div class="field"><label for="kMult">Heat released by the fire <output id="okMult" for="kMult" aria-live="off"></output></label><input type="range" id="kMult" min="0.25" max="4" step="0.25"></div>
         <div class="field"><label for="kCfm">Scrubber airflow <output id="okCfm" for="kCfm" aria-live="off"></output></label><input type="range" id="kCfm" min="5" max="100" step="1"></div>
         <div class="field"><label for="kEff">CO removed per pass <output id="okEff" for="kEff" aria-live="off"></output></label><input type="range" id="kEff" min="5" max="100" step="5"></div>
         <div id="c3" class="calc__out" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading</span><i></i><i></i><i></i></div></div>
-        <p class="calc__assume">Scaled from the 1.28 MJ acrylic fire on Saffire VI: 308 ppm of CO in 16.7 m&sup3; at 54.6 kPa. Gas release is assumed to grow in step with heat release. The scrubber airflow and efficiency are yours to set. The prototype flown on Saffire IV and V removed little CO.</p>
+        <details class="disclosure"><summary>Assumptions</summary><div class="disclosure__body"><p class="calc__assume">Scaled from the 1.28 MJ acrylic fire on Saffire VI: 308 ppm of CO in 16.7 m&sup3; at 54.6 kPa. Gas release is assumed to grow in step with heat release. The scrubber airflow and efficiency are yours to set. The prototype flown on Saffire IV and V removed little CO.</p></div></details>
       </article>
     </div>
 
-    <div class="callout calc-page__note">
-      <p><strong>Screening estimates, not a certification.</strong> All three calculators assume an ideal gas at 23 &deg;C mixed evenly through the cabin. Limits and the Saffire VI reference fire are listed on the <a href="method#limits">method page</a>. To see how these numbers turn into verdicts, open the <a href="audit?env=rover&amp;row=co2">rover CO&#8322; cell</a> in the audit table.</p>
-    </div>
+    <details class="disclosure disclosure--section calc-page__note">
+      <summary>Screening estimates, not a certification</summary>
+      <div class="disclosure__body"><p>Ideal gas at 23 &deg;C, mixed evenly. Limits on the <a href="method#limits">method page</a>. Verdict example: <a href="audit?env=rover&amp;row=co2#evidence-panel">rover CO&#8322; cell</a>.</p></div>
+    </details>
   </div>
 </main>
 <!-- partial:footer -->

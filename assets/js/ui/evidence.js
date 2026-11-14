@@ -13,11 +13,6 @@ BLFA.boot(function (A) {
     return '<div class="state state--empty" role="status"><h3>' + esc(title) + '</h3><p>' + esc(text) + '</p>' + (resetId ? '<button type="button" class="btn btn--sm" id="' + resetId + '">Reset filters</button>' : '') + '</div>';
   }
 
-  /* ---------- counts in the jump bar ---------- */
-  $('jc-exp').textContent = pluralize(invKeys.length, 'experiment', 'experiments');
-  $('jc-rec').textContent = pluralize(A.EVIDENCE.length, 'record', 'records');
-  $('jc-src').textContent = pluralize(srcKeys.length, 'source', 'sources');
-
   /* ---------- search ---------- */
   var CHIPS = ['What breaks for the rover?', 'Can a CO\u2082 extinguisher be used in a small cabin?', 'Why do detectors miss smoke?', 'What is unknown on the Moon?', 'Does turning off the fans work on Mars?'];
   var lastSearch = null;

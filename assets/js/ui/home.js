@@ -7,14 +7,9 @@ BLFA.boot(function (A) {
   /* ---------- headline numbers, all derived from the engine ---------- */
   var tally = { breaks: 0, weakens: 0, unknown: 0, holds: 0 };
   presets.forEach(function (e) { var c = A.summary(e).counts; Object.keys(tally).forEach(function (k) { tally[k] += c[k]; }); });
-  var total = presets.length * A.ROWS.length;
-  var experiments = Object.keys(A.INV).length, sources = Object.keys(A.SOURCES).length;
-  function fact(n, label) { return '<div class="stat"><b>' + n + '</b><span>' + label + '</span></div>'; }
   function vfact(k, label) { return '<div class="stat v-' + k + '"><b>' + B.icon(k) + tally[k] + '</b><span>' + label + '</span></div>'; }
   $('stats').removeAttribute('aria-busy');
-  $('stats').innerHTML =
-    '<div class="stats__group"><p class="stats__head">What is audited</p><div class="stats__row">' + fact(A.ROWS.length, 'ISS-era rules') + fact(presets.length, 'preset cabins') + fact(A.EVIDENCE.length, 'evidence records') + fact(experiments, 'experiments') + fact(sources, 'sources') + '</div></div>' +
-    '<div class="stats__group"><p class="stats__head">Verdicts across the ' + total + ' rule and cabin pairs</p><div class="stats__row">' + vfact('breaks', 'break') + vfact('weakens', 'weaken') + vfact('unknown', 'unknown') + vfact('holds', 'hold') + '</div></div>';
+  $('stats').innerHTML = '<div class="stats__row stats__row--hero">' + vfact('breaks', 'break') + vfact('weakens', 'weaken') + vfact('unknown', 'unknown') + vfact('holds', 'hold') + '</div>';
 
   /* ---------- a figure computed live, so the page cannot drift from the engine ---------- */
   var rover = A.envById('rover');
@@ -24,7 +19,7 @@ BLFA.boot(function (A) {
   }
 
   /* ---------- legend ---------- */
-  var items = [['holds', 'The evidence supports the rule in this cabin.'], ['weakens', 'It works in part, or with a documented exception.'], ['breaks', 'The evidence contradicts the rule in this cabin.'], ['unknown', 'Nobody has measured it in matching conditions.']];
+  var items = [['holds', 'Evidence supports the rule.'], ['weakens', 'Works in part or with an exception.'], ['breaks', 'Evidence contradicts the rule.'], ['unknown', 'Not measured in matching conditions.']];
   $('legend').innerHTML = items.map(function (x) { return '<li class="v-' + x[0] + '">' + B.verdict(x[0]) + '<span>' + x[1] + '</span></li>'; }).join('');
 
   /* ---------- mini verdict map ---------- */

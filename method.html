@@ -4,17 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Method and data | Beyond LEO Fire Audit</title>
-<meta name="description" content="How each verdict is computed from written rules and cited NASA evidence, where SI fits and where it does not, the limits of the audit, the NASA data used and a downloadable evidence.json.">
+<meta name="description" content="How verdicts are computed from fixed rules, NASA evidence, limits of the audit, and downloadable data.">
+<meta property="og:title" content="Method and data | Beyond LEO Fire Audit">
+<meta property="og:description" content="How verdicts are computed from fixed rules, NASA evidence, limits of the audit, and downloadable data.">
 <!-- partial:head -->
 <meta name="theme-color" content="#070a10">
 <meta name="color-scheme" content="dark light">
 <meta name="generator" content="Hand-written HTML, CSS and JavaScript. Text, data records and code were drafted with AI assistance (Claude by Anthropic).">
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/og.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Beyond LEO Fire Audit">
+<meta property="og:image" content="/assets/img/og.png">
+<meta property="og:image:alt" content="Beyond LEO Fire Audit — flame mark and title">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="/assets/img/og.png">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
 <link rel="stylesheet" href="assets/css/pages.css">
-<script>document.documentElement.classList.add("js");try{var t=localStorage.getItem("blfa-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="assets/js/theme-boot.js"></script>
 <script src="assets/js/ui/nav.js" defer></script>
 <!-- /partial:head -->
 </head>
@@ -50,19 +59,19 @@
 </header>
 <!-- /partial:header -->
 <main id="main">
-  <section class="band" data-theme="dark" aria-labelledby="page-title">
+  <section class="band band--tight" data-theme="dark" aria-labelledby="page-title">
     <div class="wrap band__inner band__inner--single">
-      <div>
-        <p class="kicker kicker--brand">Method and data</p>
-        <h1 id="page-title">How a verdict is made, and what it is built on</h1>
-        <p class="lede">Every cell comes from a written rule, the cabin conditions and cited evidence records. No language model decides a verdict. This page shows the rules, the limits, the data and where SI can help.</p>
+      <div class="page-hero">
+        <h1 id="page-title">How a verdict is made</h1>
+        <p class="lede">Fixed rules plus cited NASA records—no language model decides a verdict.</p>
+        <p><a class="btn btn--primary" href="evidence.json">Download evidence.json</a></p>
       </div>
     </div>
   </section>
 
   <div class="wrap doc">
     <nav class="doc__toc" aria-label="On this page">
-      <p class="kicker">On this page</p>
+      <p class="visually-hidden">On this page</p>
       <ol>
         <li><a href="#verdicts">How verdicts are made</a></li>
         <li><a href="#si">Where SI fits</a></li>

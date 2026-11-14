@@ -21,17 +21,16 @@ BLFA.boot(function (A) {
   /* ---------- readout in the page header ---------- */
   function renderReadout() {
     var e = env(), c = A.summary(e).counts;
-    function n(k, word) { return '<div class="readout__n v-' + k + '"><b>' + B.icon(k) + '<span class="num">' + c[k] + '</span></b><span>' + word + '</span></div>'; }
+    function n(k, word) { return '<span class="readout__n v-' + k + '">' + B.icon(k) + '<span class="num">' + c[k] + '</span> ' + word + '</span>'; }
     $('readout').removeAttribute('aria-busy');
     $('readout').innerHTML =
-      '<div class="readout__name"><span class="kicker">Selected cabin</span><b>' + esc(e.name) + '</b>' +
-      '<span class="readout__cond"><span>' + B.gText(e.g) + '</span><span>' + A.fmt(e.p, 1) + ' kPa</span><span>' + B.o2Text(e.o2) + ' oxygen</span><span>' + B.vText(e.v) + '</span><span>' + (e.dust ? 'planetary dust' : 'no planetary dust') + '</span></span></div>' +
-      '<div class="readout__nums">' + n('breaks', c.breaks === 1 ? 'rule breaks' : 'rules break') + n('weakens', c.weakens === 1 ? 'weakens' : 'weaken') + n('unknown', 'unknown') + n('holds', c.holds === 1 ? 'holds' : 'hold') + '</div>';
+      '<p class="readout__line"><strong>' + esc(e.name) + '</strong><span class="readout__cond">' + esc(B.gText(e.g) + ' · ' + A.fmt(e.p, 1) + ' kPa · ' + B.o2Text(e.o2) + ' O₂ · ' + B.vText(e.v)) + '</span></p>' +
+      '<p class="readout__line readout__line--counts" aria-label="Verdict counts for this cabin">' + n('breaks', 'break') + n('weakens', 'weaken') + n('unknown', 'unknown') + n('holds', 'hold') + '</p>';
   }
 
   /* ---------- legend ---------- */
   function renderLegend() {
-    var items = [['holds', 'The evidence supports the rule in this cabin.'], ['weakens', 'It works in part, or with a documented exception.'], ['breaks', 'The evidence contradicts the rule in this cabin.'], ['unknown', 'Nobody has measured it in matching conditions.']];
+    var items = [['holds', 'Holds'], ['weakens', 'Weakens'], ['breaks', 'Breaks'], ['unknown', 'Unknown']];
     $('legend').innerHTML = items.map(function (x) { return '<li class="v-' + x[0] + '">' + B.verdict(x[0]) + '<span>' + x[1] + '</span></li>'; }).join('');
   }
 
@@ -46,7 +45,7 @@ BLFA.boot(function (A) {
 
   /* ---------- matrix ---------- */
   function renderMatrix() {
-    var envs = allEnvs(), h = '<table class="matrix"><thead><tr><th class="matrix__corner" scope="col">Rule of thumb from the ISS era</th>';
+    var envs = allEnvs(), h = '<table class="matrix matrix--compact"><thead><tr><th class="matrix__corner" scope="col">Rule</th>';
     envs.forEach(function (e) {
       var s = A.summary(e), as = e.assumed || {};
       function val(k, text) { return '<span class="v' + (as[k] ? ' assumed' : '') + '">' + text + '</span>'; }
@@ -118,7 +117,6 @@ BLFA.boot(function (A) {
   /* ---------- rankings ---------- */
   function renderRanks() {
     var e = env(), inv = A.rankInvestigations(e), gaps = A.rankGaps(e), top = inv.length ? inv[0].score : 1;
-    $('rank-title').textContent = 'What to read first for ' + e.phrase;
     var h = '<h3>Experiments ranked by how much they decide</h3><p class="note">Each rule counts 3 points if it breaks, 2 if it weakens or is unknown and 1 if it holds. An experiment gets full points when its record applies to this cabin and 40% when it was measured under other conditions.</p>';
     h += '<ol class="rank">';
     inv.forEach(function (x) {
@@ -167,11 +165,32 @@ BLFA.boot(function (A) {
   }
 
   /* ---------- selection ---------- */
+  var drawer = $('evidence-panel'), sheet = drawer && drawer.querySelector('.ev-drawer__sheet'), lastFocus = null;
+
+  function setDrawerOpen(open) {
+    if (!drawer) return;
+    drawer.hidden = !open;
+    document.documentElement.classList.toggle('ev-drawer-open', open);
+    if (open) {
+      lastFocus = document.activeElement;
+      drawer.removeAttribute('aria-hidden');
+      try { sheet.focus(); } catch (e) { /* */ }
+    } else {
+      drawer.setAttribute('aria-hidden', 'true');
+      if (lastFocus && lastFocus.focus) try { lastFocus.focus({ preventScroll: true }); } catch (e2) { lastFocus.focus(); }
+    }
+  }
+
   function select(envId, rowId, open) {
     state.env = envId; if (rowId) state.row = rowId;
     B.setParams({ env: state.env, row: state.row });
     markSelection(); renderDetail(); renderRanks(); renderReadout();
-    if (open) B.scrollToNode($('detail-heading'), true);
+    if (open) {
+      setDrawerOpen(true);
+      try { history.replaceState(null, '', window.location.pathname + '?' + new URLSearchParams({ env: state.env, row: state.row }).toString() + '#evidence-panel'); } catch (e) { /* */ }
+      var h = $('detail-heading');
+      if (h) B.scrollToNode(h, true);
+    }
   }
 
   function init() {
@@ -185,8 +204,16 @@ BLFA.boot(function (A) {
     $('matrix').addEventListener('click', onPick);
     $('picker').addEventListener('click', onPick);
 
+    [].forEach.call(document.querySelectorAll('[data-drawer-close]'), function (btn) {
+      btn.addEventListener('click', function () { setDrawerOpen(false); });
+    });
+  document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && drawer && !drawer.hidden) { ev.preventDefault(); setDrawerOpen(false); }
+    });
+
     $('detail').addEventListener('click', function (ev) {
       if (ev.target.closest('#backTop')) {
+        setDrawerOpen(false);
         var sel = document.querySelector('#matrix .cell[aria-pressed="true"]') || document.querySelector('#matrix .cell');
         var target = DESKTOP.matches ? $('matrix') : $('picker');
         B.scrollToNode(target);
@@ -209,7 +236,11 @@ BLFA.boot(function (A) {
       if (next && next.offsetParent !== null) { ev.preventDefault(); next.focus(); }
     });
 
-    if (window.location.hash === '#evidence-panel') B.scrollToNode($('detail-heading'));
+    if (window.location.hash === '#evidence-panel') {
+      setDrawerOpen(true);
+      var dh = $('detail-heading');
+      if (dh) B.scrollToNode(dh, true);
+    }
   }
   init();
 });
