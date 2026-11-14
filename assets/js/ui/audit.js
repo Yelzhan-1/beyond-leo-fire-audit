@@ -176,7 +176,9 @@ BLFA.boot(function (A) {
         history.replaceState(null, '', window.location.pathname + '?' + new URLSearchParams({ env: state.env, row: state.row }).toString() + '#evidence-panel');
       } catch (e) { /* */ }
       var h = $('detail-heading');
-      if (h) B.scrollToNode(h, true);
+      if (h) {
+        try { h.focus({ preventScroll: true }); } catch (e3) { h.focus(); }
+      }
     }
   }
 
