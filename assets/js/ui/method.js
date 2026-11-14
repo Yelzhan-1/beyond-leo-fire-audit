@@ -3,6 +3,33 @@ BLFA.boot(function (A) {
   'use strict';
   var B = window.BLFA, $ = B.$, esc = B.esc;
   var ids = Object.keys(A.SOURCES);
+  var presets = A.ENVS;
+
+  /* ---------- context: heat map and CO2 example ---------- */
+  var rover = A.envById('rover');
+  if (rover && $('methodCo2')) {
+    var co2 = A.co2Discharge(rover, A.PFE_CO2_KG);
+    $('methodCo2').textContent = 'one ' + A.fmt(A.PFE_CO2_KG, 1) + ' kg CO\u2082 extinguisher emptied into the ' + A.fmt(rover.v, 0) + ' m\u00b3 rover gives about ' + A.sig(co2.mmHg) + ' mmHg of CO\u2082, against a one-hour limit of ' + A.LIMITS.co2_1h_mmHg + ' mmHg.';
+  }
+  if ($('legend')) {
+    var legendItems = [['holds', 'Evidence supports the rule.'], ['weakens', 'Works in part or with an exception.'], ['breaks', 'Evidence contradicts the rule.'], ['unknown', 'Not measured in matching conditions.']];
+    $('legend').innerHTML = legendItems.map(function (x) { return '<li class="v-' + x[0] + '">' + B.verdict(x[0]) + '<span>' + x[1] + '</span></li>'; }).join('');
+  }
+  if ($('heat')) {
+    var h = '<table class="table heat"><caption class="visually-hidden">Verdict of each rule in each preset cabin. Each verdict links to its evidence.</caption><thead><tr><th scope="col">Rule</th>';
+    presets.forEach(function (e) { h += '<th scope="col">' + esc(e.name) + '</th>'; });
+    h += '</tr></thead><tbody>';
+    A.ROWS.forEach(function (r) {
+      h += '<tr><th scope="row">' + esc(r.short) + '</th>';
+      presets.forEach(function (e) {
+        var v = A.evaluate(r.id, e);
+        h += '<td class="heat__td v-' + v.status + '"><a class="heat__cell" href="audit?env=' + e.id + '&amp;row=' + r.id + '#evidence-panel" title="' + esc(v.reason) + '">' + B.icon(v.status) + '<span>' + A.STATUS[v.status].label + '</span><span class="visually-hidden">: ' + esc(e.name + ', ' + r.short + '. ' + v.reason) + '</span></a></td>';
+      });
+      h += '</tr>';
+    });
+    $('heat').removeAttribute('aria-busy');
+    $('heat').innerHTML = h + '</tbody></table>';
+  }
 
   /* ---------- rules ---------- */
   $('rulesTable').removeAttribute('aria-busy');
