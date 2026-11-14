@@ -1,0 +1,112 @@
+/* Design tokens. Every colour, size and space used by the site comes from here.
+   tests/contrast.test.mjs parses the --text*, --link, --brand and verdict tokens below and fails
+   if any listed pair drops under WCAG AA (4.5:1 for text, 3:1 for UI components). */
+
+:root {
+  /* type */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 1rem;
+  --fs-md: 1.125rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: clamp(1.75rem, 1.2rem + 1.6vw, 2.25rem);
+  --fs-3xl: clamp(2.125rem, 1.3rem + 2.8vw, 3.25rem);
+  --fs-display: clamp(2.5rem, 1.2rem + 5vw, 4.75rem);
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-body: 1.55;
+
+  /* spacing, 0.25rem steps */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+
+  /* shape */
+  --r-1: 3px;
+  --r-2: 6px;
+  --r-3: 10px;
+  --bw: 1px;
+
+  /* layout */
+  --wrap: 1240px;
+  --gutter: clamp(1rem, 0.4rem + 2.6vw, 2rem);
+  --header-h: 64px;
+
+  /* motion */
+  --t-fast: 120ms;
+  --t-med: 220ms;
+}
+
+/* ---------- dark (default): mission control. Any element can opt in with data-theme="dark" (the hero does). ---------- */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #070a10;
+  --bg-elev: #0b101a;
+  --surface: #0f1623;
+  --surface-2: #151e2f;
+  --surface-3: #1c2840;
+  --line: #25314a;
+  --line-strong: #6b7c9e;
+
+  --text: #eaeff7;
+  --text-2: #b8c3d6;
+  --text-3: #93a0b8;
+
+  --link: #8db8ff;
+  --brand: #ff5a3d;
+  --on-brand: #0b0d12;
+  --focus: #ffd166;
+
+  --holds: #3ddc97;     --holds-bg: #0e2b21;
+  --weakens: #ffb84d;   --weakens-bg: #2f230c;
+  --breaks: #ff8a78;    --breaks-bg: #3a1710;
+  --unknown: #bcc7da;   --unknown-bg: #1a2336;
+
+  --flame-blue: #4d8dff;
+  --flame-warm: #ffc55c;
+  --grid-line: rgba(255, 255, 255, 0.035);
+  --glow: rgba(77, 141, 255, 0.14);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- light ---------- */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5f9;
+  --bg-elev: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --surface-3: #e9edf4;
+  --line: #d3d9e4;
+  --line-strong: #6b788f;
+
+  --text: #0b0d12;
+  --text-2: #364054;
+  --text-3: #55607a;
+
+  --link: #0b4fbf;
+  --brand: #c8321a;
+  --on-brand: #ffffff;
+  --focus: #0b4fbf;
+
+  --holds: #0a6a41;     --holds-bg: #dcf3e5;
+  --weakens: #854d00;   --weakens-bg: #fbe9c8;
+  --breaks: #b3230c;    --breaks-bg: #fbdcd5;
+  --unknown: #435068;   --unknown-bg: #e3e8f0;
+
+  --flame-blue: #2f6fe8;
+  --flame-warm: #e8920c;
+  --grid-line: rgba(11, 13, 18, 0.05);
+  --glow: rgba(47, 111, 232, 0.1);
+  --shadow: 0 1px 2px rgba(11, 13, 18, 0.06), 0 8px 24px rgba(11, 13, 18, 0.06);
+}

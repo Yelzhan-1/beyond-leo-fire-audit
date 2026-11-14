@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Method and data | Beyond LEO Fire Audit</title>
+<meta name="description" content="How each verdict is computed from written rules and cited NASA evidence, where SI fits and where it does not, the limits of the audit, the NASA data used and a downloadable evidence.json.">
+<!-- partial:head -->
+<meta name="theme-color" content="#070a10">
+<meta name="color-scheme" content="dark light">
+<meta name="generator" content="Hand-written HTML, CSS and JavaScript. Text, data records and code were drafted with AI assistance (Claude by Anthropic).">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+<link rel="stylesheet" href="assets/css/pages.css">
+<script>document.documentElement.classList.add("js");try{var t=localStorage.getItem("blfa-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="assets/js/ui/nav.js" defer></script>
+<!-- /partial:head -->
+</head>
+<body>
+<!-- partial:header -->
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header">
+  <div class="wrap site-header__bar">
+    <a class="brand" href="./">
+      <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="6" fill="#0b101a"/><path d="M16 4c1.2 4.6 7 8.2 7 14.2A7 7 0 0 1 9 18.2C9 14.6 11.4 12.6 12.6 9.4 14.2 10.8 14.8 12.2 15 13.6 16.4 11.4 16.6 7.4 16 4Z" fill="#ff5a3d"/><path d="M16 17.4c.7 2 3 3.2 3 5.4a3 3 0 0 1-6 0c0-1.6 1.2-2.6 1.8-3.8.6.5.9 1 1.2 1.6.2-.9.2-2.2 0-3.2Z" fill="#ffc55c"/></svg>
+      <span class="brand__name">Beyond LEO<span>Fire Audit</span></span>
+    </a>
+    <button class="icon-btn theme-toggle" type="button" aria-label="Switch colour theme" data-theme-toggle>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <button class="icon-btn nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+      <svg class="i-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      <svg class="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <span>Menu</span>
+    </button>
+    <nav class="site-nav" id="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="./">Overview</a></li>
+        <li><a href="audit">Audit</a></li>
+        <li><a href="evidence">Evidence</a></li>
+        <li><a href="calculators">Calculators</a></li>
+        <li><a href="method" aria-current="page">Method &amp; data</a></li>
+        <li><a href="about">About</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<!-- /partial:header -->
+<main id="main">
+  <section class="band" data-theme="dark" aria-labelledby="page-title">
+    <div class="wrap band__inner band__inner--single">
+      <div>
+        <p class="kicker kicker--brand">Method and data</p>
+        <h1 id="page-title">How a verdict is made, and what it is built on</h1>
+        <p class="lede">Every cell comes from a written rule, the cabin conditions and cited evidence records. No language model decides a verdict. This page shows the rules, the limits, the data and where SI can help.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap doc">
+    <nav class="doc__toc" aria-label="On this page">
+      <p class="kicker">On this page</p>
+      <ol>
+        <li><a href="#verdicts">How verdicts are made</a></li>
+        <li><a href="#si">Where SI fits</a></li>
+        <li><a href="#calculations">What is calculated</a></li>
+        <li><a href="#limits">Limits of the audit</a></li>
+        <li><a href="#nasa-data">NASA data used</a></li>
+        <li><a href="#resources">Challenge resources</a></li>
+        <li><a href="#data">Download the data</a></li>
+      </ol>
+    </nav>
+
+    <div class="doc__body">
+      <noscript><div class="state state--error"><h3>Parts of this page need JavaScript</h3><p>The rule table, source lists and data checks are built in your browser. The full data set is in <a href="evidence.json">evidence.json</a>.</p></div></noscript>
+
+      <section id="verdicts" aria-labelledby="verdicts-title">
+        <h2 id="verdicts-title">How verdicts are made</h2>
+        <p class="measure muted">A verdict has four possible values. It is computed by a fixed rule for each row, from the cabin's gravity, pressure, oxygen, volume, dust and distance from Earth orbit. The evidence records then show what was measured, in which conditions, and where in the source.</p>
+        <ol class="steps">
+          <li><b>1. Cabin conditions.</b> Six cabins: five presets from agency sources (some values flagged as assumed) and one you build.</li>
+          <li><b>2. A written rule.</b> Each of the ten rows has a decision rule, shown below and on every evidence panel.</li>
+          <li><b>3. Evidence records.</b> Records that were measured in matching conditions are listed first, the rest are kept visible as measured under other conditions.</li>
+        </ol>
+        <div class="table-scroll" role="region" aria-label="The ten rules and how each verdict is decided" tabindex="0" id="rulesTable" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading the rules</span><i></i><i></i><i></i></div></div>
+      </section>
+
+      <section id="si" aria-labelledby="si-title">
+        <h2 id="si-title">Where SI fits</h2>
+        <div class="callout">
+          <p><strong>Verdicts are deterministic rules, not model output.</strong> The same cabin conditions always give the same verdict, and a test checks every verdict against a snapshot of the original engine.</p>
+        </div>
+        <ul class="plain">
+          <li><b>Used today, in preparation.</b> The evidence records and the wording were drafted with an AI model (Claude by Anthropic) from the cited documents, then checked against them. The site and its code were also written with AI assistance.</li>
+          <li><b>Optional, off unless configured.</b> The search on the evidence page can offer an explanation of the records it found. It sends only those records to an SI service and asks for an answer drawn from them alone. <span id="siStatus" class="si-status">Checking whether it is switched on.</span></li>
+          <li><b>Planned.</b> An SI layer that explains and ranks inside the retrieved records, with citations, behind a server-side proxy that holds the key. It will not change a verdict.</li>
+        </ul>
+      </section>
+
+      <section id="calculations" aria-labelledby="calc-title">
+        <h2 id="calc-title">What is calculated</h2>
+        <p class="measure muted">Three rows are calculated rather than read from a table. All three assume an ideal gas at 23 &deg;C mixed evenly through the cabin. The <a href="calculators">calculators</a> use the same formulas.</p>
+        <div class="grid grid--3" id="calcCards" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading</span><i></i><i></i><i></i></div></div>
+      </section>
+
+      <section id="limits" aria-labelledby="limits-title">
+        <h2 id="limits-title">Limits of the audit</h2>
+        <ul class="plain">
+          <li>These are screening estimates for discussion. They are not a safety certification of any vehicle.</li>
+          <li>Calculations assume an ideal gas at 23 &deg;C mixed evenly through the cabin.</li>
+          <li>The air verdict rescales one Saffire VI fire and treats its far-field sensor reading as the cabin average. Limits are compared in ppm, as the Saffire VI paper does. At reduced cabin pressure the same ppm is a lower partial pressure.</li>
+          <li>The 30 mmHg CO&#8322; danger level is the NIOSH value of 40,000 ppm at sea-level pressure.</li>
+          <li>Values marked assumed in the table header (the lander and Mars habitat volumes, the Mars atmosphere, sea-level air in the capsule) are design assumptions of this audit. Change them in the cabin builder.</li>
+          <li>Partial-gravity verdicts rest on short ground tests, models and NASA assessments. No long burn has yet been recorded in true lunar or Martian gravity.</li>
+          <li>The flame icons are schematic.</li>
+          <li>This version is a literature audit. Values were taken from published papers and slides, and no raw PSI dataset has been downloaded or reprocessed here.</li>
+        </ul>
+      </section>
+
+      <section id="nasa-data" aria-labelledby="nasa-title">
+        <h2 id="nasa-title">NASA data used</h2>
+        <p class="measure muted" id="psiList" data-app aria-busy="true">Loading the list of investigations.</p>
+        <p class="measure muted">Saffire IV to VI and the partial-gravity ground tests come from NASA technical reports and the investigators' publications. SoFIE-MIST comes from the investigators' university. The <a href="evidence#experiments">experiments list</a> gives each investigation's records and test conditions.</p>
+        <p class="measure muted">The pressurized rover volume (13 m&sup3; of living space) comes from the JAXA and Toyota pressurized rover concept, press release of 12 March 2019.</p>
+      </section>
+
+      <section id="resources" aria-labelledby="res-title">
+        <h2 id="res-title">Challenge resources and where they appear</h2>
+        <p class="measure muted">All ten resources listed on the Flame in Freefall challenge page are used or cited.</p>
+        <ul class="plain" id="official" data-app aria-busy="true"><li>Loading.</li></ul>
+      </section>
+
+      <section id="data" aria-labelledby="data-title">
+        <h2 id="data-title">Download the data</h2>
+        <p class="measure muted"><code>evidence.json</code> holds the rules, verdicts, evidence records and sources in machine-readable form. This page loads it to check it against the engine.</p>
+        <div class="card" id="dataCard" aria-live="polite" data-app aria-busy="true"><div class="skeleton" role="status"><span class="visually-hidden">Loading evidence.json</span><i></i><i></i><i></i></div></div>
+        <textarea class="json" id="jsonOut" hidden readonly aria-label="Evidence and verdicts as JSON"></textarea>
+      </section>
+    </div>
+  </div>
+</main>
+<!-- partial:footer -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div class="stack">
+        <p class="site-footer__brand">Beyond LEO Fire Audit</p>
+        <p>Ten ISS-era fire-safety rules of thumb, checked against lunar and Martian cabins with NASA microgravity combustion data. Built for the 2026 NASA Space Apps Challenge, <em>Flame in Freefall</em>, by Team NZE, Almaty.</p>
+      </div>
+      <div>
+        <h2>Explore</h2>
+        <ul>
+          <li><a href="./">Overview</a></li>
+          <li><a href="audit">Audit table</a></li>
+          <li><a href="evidence">Evidence and sources</a></li>
+          <li><a href="calculators">Calculators</a></li>
+          <li><a href="method">Method &amp; data</a></li>
+          <li><a href="about">About the team</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Elsewhere</h2>
+        <ul>
+          <li><a class="ext" href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/" rel="noopener">Challenge page</a></li>
+          <li><a class="ext" href="https://psi.nasa.gov/physci/repo/search?q=combustion" rel="noopener">NASA PSI repository</a></li>
+          <li><a class="ext" href="https://github.com/NessXXL/beyond-leo-fire-audit" rel="noopener">Source code</a></li>
+          <li><a href="evidence.json">evidence.json</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__legal">
+      <p>An independent project that uses public NASA and partner-agency material. It is not a NASA product and carries no endorsement. Screening estimates for discussion, not a safety certification of any vehicle.</p>
+      <p>Made with AI assistance (Claude by Anthropic) for research, drafting and code. Verdicts are computed by fixed rules, not by a language model.</p>
+    </div>
+  </div>
+</footer>
+<!-- /partial:footer -->
+<script src="assets/js/data/sources.js" defer></script>
+<script src="assets/js/data/investigations.js" defer></script>
+<script src="assets/js/data/environments.js" defer></script>
+<script src="assets/js/engine.js" defer></script>
+<script src="assets/js/si.js" defer></script>
+<script src="assets/js/ui/common.js" defer></script>
+<script src="assets/js/ui/method.js" defer></script>
+</body>
+</html>

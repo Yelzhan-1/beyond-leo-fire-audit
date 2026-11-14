@@ -1,54 +1,61 @@
 # Beyond LEO Fire Audit
 
-A web dashboard for the 2026 NASA Space Apps Challenge, *Flame in Freefall*.
+A static site for the 2026 NASA Space Apps Challenge, [*Flame in Freefall*](https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/).
 
-The ISS runs on a set of fire-safety rules of thumb: stop the airflow and the flame dies, the smoke detector will catch it, a material that passes the 1 g flame test is safe. This project checks ten of those rules against five crewed environments (ISS, an Orion-class capsule, a lunar lander or habitat, a pressurized rover and a Mars surface habitat) and marks each one as **holds**, **weakens**, **breaks** or **unknown**, with the NASA experiment behind every verdict.
+The ISS runs on fire-safety rules of thumb: stop the airflow and the flame dies, the smoke detector will catch it, a material that passes the 1 g flame test is safe. This project checks ten of those rules against five crewed environments (ISS, an Orion-class capsule, a lunar lander or habitat, a pressurized rover and a Mars surface habitat) and marks each one as **holds**, **weakens**, **breaks** or **unknown**, with the NASA experiment behind every verdict.
 
-## Run it
+## Run locally
 
-Open `index.html` in a browser. There is nothing to install and no server. The whole page is one file.
+```bash
+npm ci
+npm start          # http://localhost:8080 (clean URLs, same as Vercel)
+npm test           # engine parity, contrast, page shell and links
+npm run check      # JSON validity, html-validate, tests
+```
 
-## What is on the page
+No build step. Pages are plain HTML at the repo root; `scripts/serve.mjs` mirrors `vercel.json` (`cleanUrls`, `404.html` for unknown paths).
 
-- **Audit table.** Ten rules against five preset cabins and one cabin you configure yourself (gravity, pressure, oxygen, volume, dust). Every cell opens its evidence.
-- **Evidence records.** Each record gives the finding, the test conditions, the investigation and the place in the source document.
-- **Ranked investigations.** For the selected cabin, which experiments decide the most rules.
-- **Ranked open questions.** For the selected cabin, which verdicts are furthest from a measurement in matching conditions.
-- **Three calculators.** CO2 extinguisher discharge, oxygen released by masks, and carbon monoxide after a fire with scrubbing time.
-- **Search.** Runs in the browser and returns only verdicts and records from the audit.
+After editing `partials/head.html`, `partials/header.html` or `partials/footer.html`:
+
+```bash
+npm run sync       # rewrite <!-- partial:... --> blocks in every page
+```
+
+## Site map
+
+| Page | URL | Role |
+|------|-----|------|
+| Overview | `/` | Problem, live stats, mini verdict map, CTAs |
+| Audit | `/audit` | Matrix, cabin builder, evidence panel, rankings |
+| Evidence | `/evidence` | Search, experiments, records, sources |
+| Calculators | `/calculators` | CO₂ discharge, oxygen masks, air after fire |
+| Method & data | `/method` | Rules, limits, NASA data, SI note, `evidence.json` |
+| About | `/about` | Challenge, Team NZE Almaty, AI disclosure |
+
+## Code layout
+
+```
+assets/css/          tokens, base, components, pages
+assets/js/data/      SOURCES, INV, ENVS (assign window.AUDIT_DATA)
+assets/js/engine.js  verdict engine (DOM-free, window.AUDIT)
+assets/js/ui/        one script per page + nav.js, common.js
+assets/js/si.js      optional SI explanation hook (no API key here)
+partials/            shared head, header, footer (synced into *.html)
+scripts/             serve, sync-partials, check-json
+tests/               engine parity snapshot, contrast, pages.test.mjs
+evidence.json        machine-readable export of rules, verdicts, records
+```
+
+The engine is tested in Node via `tests/helpers/load-engine.mjs` and compared to `tests/fixtures/engine-snapshot.json` captured from the pre-refactor monolith.
+
+## Verdicts and data
+
+No language model decides a cell. Each rule has a written decision rule (on the Method page), applied to cabin conditions and evidence records. Optional SI on the Evidence page can explain search results from those records only; see [`docs/si-hook.md`](docs/si-hook.md).
 
 `evidence.json` holds the same rules, verdicts, evidence records and sources in machine-readable form.
 
-## How a verdict is made
-
-No language model decides a cell. Each rule has a written decision rule (shown on the page under "How the verdicts are made"), applied to the cabin conditions and the evidence records. Three rows are calculated:
-
-- **CO2 extinguisher:** partial pressure of CO2 after one 2.7 kg discharge, compared with the 3 mmHg one-hour limit and the NIOSH immediate-danger value.
-- **Oxygen masks:** cabin volume compared with Orion (where NASA ruled the ISS masks out) and the ISS (where they are used).
-- **Air after the fire:** the largest gas release measured on Saffire VI, rescaled to the cabin volume and pressure, compared with the CO and CO2 limits cited in the Saffire VI paper.
-
-All calculations assume an ideal gas at 23 °C mixed evenly through the cabin.
-
-## NASA data
-
-NASA Physical Sciences Informatics (PSI) investigations: BASS (PSI-26), BASS-II (PSI-25), SAME (PSI-102), SAME-R (PSI-101), DAFT and DAFT-2 (PSI-47), FLEX (PSI-69) and the ACME Burning Rate Emulator. Saffire IV to VI, SoFIE-MIST and partial-gravity results come from NASA technical reports and the investigators' publications. The full reference list, with links, is at the bottom of the page.
-
-## Challenge resources
-
-All ten resources listed on the challenge page are used or cited: the PSI Data Repository and the NASA Combustion Science pages for the experiments, the Mir fire, Apollo 1 and Apollo 13 accounts as context for the respond and recover rows, and the three NASA Spinoff articles (fire detector, firefighter air tanks, fire attire) for use on Earth. The page lists where each one appears.
-
-## Space agency partner data
-
-The pressurized rover volume (13 m3 of living space) comes from the JAXA and Toyota pressurized rover concept, press release of 12 March 2019.
-
-## Limits
-
-- Screening estimates for discussion. Not a safety certification of any vehicle.
-- Values marked as assumed (the lander and Mars habitat volumes, the Mars atmosphere, sea-level air in the capsule) are assumptions of this audit and can be changed in the cabin builder.
-- Partial-gravity verdicts rest on short ground tests, models and NASA assessments. No long burn has yet been recorded in true lunar or Martian gravity.
-- The air verdict rescales one Saffire VI fire and treats its far-field sensor reading as the cabin average.
-
-An independent project. Not a NASA product and not endorsed by NASA.
-
 ## Author
-Zhanibek, Team NZE
+
+Zhanibek, Team NZE (Almaty).
+
+Independent project. Not a NASA product and not endorsed by NASA.

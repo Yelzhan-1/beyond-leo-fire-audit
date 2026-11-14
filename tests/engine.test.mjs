@@ -1,27 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import vm from 'node:vm';
+import { loadAudit } from './helpers/load-engine.mjs';
 
-const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const evidence = JSON.parse(readFileSync(new URL('../evidence.json', import.meta.url), 'utf8'));
-
-// Locate the engine block: the <script> that assigns root.AUDIT. It must be unique.
-const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
-  .map((m) => m[1])
-  .filter((code) => /root\.AUDIT\s*=/.test(code));
-assert.equal(blocks.length, 1, 'expected exactly one engine <script> block defining root.AUDIT');
-
-const sandbox = { window: {} };
-vm.runInNewContext(blocks[0], sandbox, { filename: 'index.html[engine]' });
-const A = sandbox.window.AUDIT;
+const A = loadAudit();
 
 const STATUSES = ['holds', 'weakens', 'breaks', 'unknown'];
 
 test('window.AUDIT exists with 10 rows and the expected environments', () => {
   assert.ok(A, 'window.AUDIT is defined');
   assert.equal(A.ROWS.length, 10);
-  assert.deepEqual([...A.ENVS.map((e) => e.id)], ['iss', 'orion', 'lander', 'rover', 'mars']);
+  assert.deepEqual(JSON.parse(JSON.stringify(A.ENVS.map((e) => e.id))), ['iss', 'orion', 'lander', 'rover', 'mars']);
 });
 
 test('verdict is holds/weakens/breaks/unknown for every row x environment', () => {
