@@ -17,14 +17,16 @@
     var baseR = 34;
 
     if (micro) {
-      var r = baseR * (0.55 + 0.22 * o2n);
+      var earthH = 2 * baseR * (1 + 2.1 * Math.sqrt(1)) * 1.06 * (0.92 + 0.14 * o2n);
+      var targetH = earthH * (0.5 + 0.03 * o2n);
       return {
         mode: 'sphere',
-        height: r * 2,
-        width: r * 2,
-        coreRadius: 5 * (0.85 + 0.15 * o2n),
+        height: targetH,
+        width: targetH,
+        coreRadius: targetH * 0.22,
         blueMix: 1,
-        brightness: 0.35 + 0.45 * o2n,
+        brightness: 0.75 + 0.25 * o2n,
+        haloAlpha: 0.55 + 0.3 * o2n,
         warmMix: 0,
         flicker: 0.25
       };
