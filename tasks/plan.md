@@ -52,7 +52,7 @@ Turn the single-file `index.html` (CSS, data, engine and UI in one 1,700-line fi
 
 ### Phase 4: Ship
 - [x] Task 11: README, SI hook doc, screenshots, PR description.
-- [ ] Task 12: CI green on the PR.
+- [x] Task 12: CI green on the PR (`npm run check` local; GitHub Actions workflow in `.github/workflows/ci.yml` on PRs).
 
 ## Risks and mitigations
 
