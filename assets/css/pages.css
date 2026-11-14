@@ -300,3 +300,8 @@ textarea.json { width: 100%; height: 12rem; margin-top: var(--s-3); padding: var
 .heat__cell:hover { background: rgba(255, 255, 255, 0.06); text-decoration: none; }
 .heat__cell:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
 .heat__cell .ic { width: 1.2em; height: 1.2em; flex: none; }
+
+/* ---------- about and 404 ---------- */
+.doc--single { grid-template-columns: minmax(0, 1fr); max-width: 56rem; margin-inline: auto; }
+.notfound { max-width: 40rem; margin-inline: auto; text-align: left; display: grid; gap: var(--s-4); justify-items: start; }
+.notfound h1 { font-size: var(--fs-2xl); color: var(--text); }

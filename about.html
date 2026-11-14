@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>About | Beyond LEO Fire Audit</title>
-<meta name="description" content="Work in progress.">
+<meta name="description" content="Team NZE from Almaty built the Beyond LEO Fire Audit for the 2026 NASA Space Apps Challenge, Flame in Freefall. How AI was used, and what this project is not.">
 <!-- partial:head -->
 <meta name="theme-color" content="#070a10">
 <meta name="color-scheme" content="dark light">
@@ -49,7 +49,60 @@
   </div>
 </header>
 <!-- /partial:header -->
-<main id="main"><div class="wrap section"><h1>About</h1></div></main>
+<main id="main">
+  <section class="band" data-theme="dark" aria-labelledby="page-title">
+    <div class="wrap band__inner band__inner--single">
+      <div>
+        <p class="kicker kicker--brand">About</p>
+        <h1 id="page-title">An audit of ISS fire rules, built by Team NZE</h1>
+        <p class="lede">Beyond LEO Fire Audit is an entry to the 2026 NASA Space Apps Challenge by Team NZE from Almaty. It asks one question: which fire-safety rules that work on the ISS still hold on the Moon and Mars?</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap doc doc--single">
+    <div class="doc__body">
+      <section id="challenge" aria-labelledby="challenge-title">
+        <h2 id="challenge-title">The challenge</h2>
+        <p class="measure muted">The project responds to <a class="ext" href="https://www.spaceappschallenge.org/2026/challenges/flame-in-freefall/" target="_blank" rel="noopener">Flame in Freefall</a>, one of the 2026 NASA Space Apps Challenge challenges. It uses the resources listed on the challenge page. <a href="method#resources">See where each one appears</a>.</p>
+      </section>
+
+      <section id="team" aria-labelledby="team-title">
+        <h2 id="team-title">The team</h2>
+        <div class="card card--accent measure">
+          <h3>Team NZE, Almaty</h3>
+          <p>Author: Zhanibek.</p>
+          <p>The code, the data records and the page text are in the open: <a class="ext" href="https://github.com/NessXXL/beyond-leo-fire-audit" target="_blank" rel="noopener">source repository</a>. Found a mistake in a record or a source? Open an issue there, and name the rule and cabin.</p>
+        </div>
+      </section>
+
+      <section id="ai" aria-labelledby="ai-title">
+        <h2 id="ai-title">How AI was used</h2>
+        <ul class="plain">
+          <li><b>Research, drafting and code.</b> An AI model (Claude by Anthropic) helped to read the cited documents, draft the evidence records and the page text, and write the code.</li>
+          <li><b>Checking.</b> Every record names its source and the place in it, so a reader can check it. Automated tests protect the verdict engine from accidental change.</li>
+          <li><b>Verdicts.</b> They are computed by fixed rules, not by a language model. <a href="method#si">Where SI fits</a> explains the one optional SI feature, which is off unless a service is configured.</li>
+        </ul>
+      </section>
+
+      <section id="disclaimer" aria-labelledby="disc-title">
+        <h2 id="disc-title">What this is not</h2>
+        <div class="callout callout--warn">
+          <p>This is an independent project that uses public NASA and partner-agency material. It is <strong>not a NASA product</strong> and carries no endorsement. The verdicts are screening estimates for discussion, <strong>not a safety certification</strong> of any vehicle. <a href="method#limits">Read the limits</a>.</p>
+        </div>
+      </section>
+
+      <section id="explore" aria-labelledby="explore-title">
+        <h2 id="explore-title">Where to go next</h2>
+        <div class="cluster">
+          <a class="btn btn--primary" href="audit">Open the audit</a>
+          <a class="btn" href="evidence">Browse the evidence</a>
+          <a class="btn" href="method">Read the method</a>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
 <!-- partial:footer -->
 <footer class="site-footer">
   <div class="wrap">

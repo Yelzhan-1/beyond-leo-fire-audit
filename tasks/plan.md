@@ -32,26 +32,26 @@ Turn the single-file `index.html` (CSS, data, engine and UI in one 1,700-line fi
 - [x] Task 1: capture engine snapshot from the old monolith and add parity tests. Verify: `npm test` green against the old `index.html`.
 
 ### Phase 2: Split without behaviour change
-- [ ] Task 2: extract data and engine into `assets/js/**`, repair the Orion source link, point the test helper at the new files. Verify: parity tests still pass.
-- [ ] Task 3: partial sync script, dev server, `vercel.json`, CI scripts lint every page. Verify: `npm run lint:html`, partial test.
+- [x] Task 2: extract data and engine into `assets/js/**`, repair the Orion source link, point the test helper at the new files. Verify: parity tests still pass.
+- [x] Task 3: partial sync script, dev server, `vercel.json`, CI scripts lint every page. Verify: `npm run lint:html`, partial test.
 
 ### Checkpoint: engine and tooling
-- [ ] parity tests, JSON check, lint all green
+- [x] parity tests, JSON check, lint all green
 
 ### Phase 3: Design system and pages (vertical slices)
-- [ ] Task 4: tokens, base, layout, components CSS and the navbar (keyboard, mobile menu, theme toggle). Verify: contrast test, manual keyboard pass.
-- [ ] Task 5: Audit page (matrix, builder, detail, ranks, deep links, mobile single-cabin view).
-- [ ] Task 6: Calculators page.
-- [ ] Task 7: Evidence page (experiments, records, sources, search, SI hook).
-- [ ] Task 8: Method and data page (with dataset load/empty/error states).
-- [ ] Task 9: Home page.
-- [ ] Task 10: About and 404.
+- [x] Task 4: tokens, base, layout, components CSS and the navbar (keyboard, mobile menu, theme toggle). Verify: contrast test, manual keyboard pass.
+- [x] Task 5: Audit page (matrix, builder, detail, ranks, deep links, mobile single-cabin view).
+- [x] Task 6: Calculators page.
+- [x] Task 7: Evidence page (experiments, records, sources, search, SI hook).
+- [x] Task 8: Method and data page (with dataset load/empty/error states).
+- [x] Task 9: Home page.
+- [x] Task 10: About and 404.
 
 ### Checkpoint: pages
-- [ ] Nav and internal-link tests green, no console errors on any page at 1440 and 390 px
+- [x] Nav and internal-link tests green, no console errors on any page at 1440 and 390 px
 
 ### Phase 4: Ship
-- [ ] Task 11: README, SI hook doc, screenshots, PR description.
+- [x] Task 11: README, SI hook doc, screenshots, PR description.
 - [ ] Task 12: CI green on the PR.
 
 ## Risks and mitigations
