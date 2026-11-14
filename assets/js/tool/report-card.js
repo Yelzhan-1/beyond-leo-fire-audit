@@ -10,7 +10,7 @@
   'use strict';
 
   var W = 1200;
-  var H = 520;
+  var H = 548;
 
   var STATUS = {
     breaks: { text: '#FF8F6B', bg: '#3A1810' },
@@ -126,32 +126,47 @@
     var text = dark ? '#EDF0F5' : '#1A1F2E';
     var muted = dark ? '#B8C0CE' : '#5A6578';
     var surface = dark ? '#141A24' : '#FFFFFF';
-    var line = dark ? '#2E3A4F' : '#D8D0C4';
+    var borderColor = dark ? '#2E3A4F' : '#D8D0C4';
+    var marginL = 56;
+    var gapText = 8;
+    var gapBeforePills = 16;
+    var titleSize = 34;
+    var subtitleSize = 19;
+    var scenarioSize = 17;
+    var flameScale = 1.22;
+    var flameW = 32 * flameScale;
+    var textX = marginL + Math.round(flameW) + 16;
 
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    var titleY = 56;
-    var titleSize = 34;
-    drawFlameGlyph(ctx, 56, titleY - titleSize * 0.42, 1.45);
+    var titleBaseline = 52;
+    var subtitleBaseline = titleBaseline + gapText + Math.round(subtitleSize * 0.82);
+    var scenarioBaseline = subtitleBaseline + gapText + Math.round(scenarioSize * 0.82);
+    var pillBaseline = scenarioBaseline + gapBeforePills + 26;
+    var headerTop = titleBaseline - Math.round(titleSize * 0.78);
+    var headerBottom = subtitleBaseline;
+    var flameCenterY = (headerTop + headerBottom) / 2;
+    var flameTopY = flameCenterY - (14 * flameScale);
+    drawFlameGlyph(ctx, marginL, flameTopY, flameScale);
 
     ctx.fillStyle = text;
     ctx.font = '700 ' + titleSize + 'px "Space Grotesk", system-ui, sans-serif';
-    ctx.fillText(model.title, 100, titleY);
+    ctx.fillText(model.title, textX, titleBaseline);
 
     ctx.fillStyle = muted;
-    ctx.font = '500 19px "Space Grotesk", system-ui, sans-serif';
-    ctx.fillText(model.scenario.subtitle, 56, 88);
+    ctx.font = '500 ' + subtitleSize + 'px "Space Grotesk", system-ui, sans-serif';
+    ctx.fillText(model.scenario.subtitle, textX, subtitleBaseline);
 
-    var line = model.scenario.line || scenarioLineFromEnv(model.scenario);
-    if (line) {
+    var scenarioLine = model.scenario.line || scenarioLineFromEnv(model.scenario);
+    if (scenarioLine) {
       ctx.fillStyle = dark ? '#B8C0CE' : '#5A6578';
-      ctx.font = '500 17px "IBM Plex Mono", monospace';
-      ctx.fillText(line, 56, 112);
+      ctx.font = '500 ' + scenarioSize + 'px "IBM Plex Mono", monospace';
+      ctx.fillText(scenarioLine, textX, scenarioBaseline);
     }
 
-    var cx = 56;
-    var cy = 136;
+    var cx = marginL;
+    var cy = pillBaseline;
     var keys = ['breaks', 'weakens', 'unknown', 'holds'];
     var c = model.counts;
     keys.forEach(function (k) {
@@ -162,7 +177,7 @@
 
     var rowH = 40;
     var gap = 8;
-    var y0 = 168;
+    var y0 = pillBaseline + 38;
     var colW = (W - 112 - 16) / 2;
     model.rules.forEach(function (r, i) {
       var col = i < 5 ? 0 : 1;
@@ -170,7 +185,7 @@
       var x = 56 + col * (colW + 16);
       var y = y0 + row * (rowH + gap);
       ctx.fillStyle = surface;
-      ctx.strokeStyle = line;
+      ctx.strokeStyle = borderColor;
       ctx.lineWidth = 1;
       roundRect(ctx, x, y, colW, rowH, 8);
       ctx.fill();
@@ -192,8 +207,8 @@
     var lastRuleBottom = y0 + 4 * (rowH + gap) + rowH;
     var footY = Math.max(lastRuleBottom + 16, H - 72);
     ctx.fillStyle = dark ? '#10151C' : '#E8E2D8';
-    ctx.fillRect(0, footY, W, 88);
-    ctx.strokeStyle = line;
+    ctx.fillRect(0, footY, W, H - footY);
+    ctx.strokeStyle = borderColor;
     ctx.beginPath();
     ctx.moveTo(0, footY);
     ctx.lineTo(W, footY);

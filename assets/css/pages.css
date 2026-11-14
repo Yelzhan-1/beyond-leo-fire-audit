@@ -607,6 +607,8 @@ textarea.json { width: 100%; height: 12rem; margin-top: var(--s-3); padding: var
 }
 .tool-foot { margin-top: var(--s-2); }
 @media (min-width: 1024px) {
+  .tool-verdicts .count-pills { flex-wrap: nowrap; gap: 4px; max-width: 100%; }
+  .tool-verdicts .count-pill { padding: 1px 5px; font-size: 0.625rem; gap: 2px; }
   .tool-verdicts__actions .tool-bar-btn__txt { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   .tool-verdicts__actions .tool-bar-btn { flex: 0 0 36px; width: 36px; padding: 0; }
   .tool-coach-slot--mobile { display: none; }
