@@ -69,6 +69,7 @@
         <li><a href="#calculations">What is calculated</a></li>
         <li><a href="#limits">Limits of the audit</a></li>
         <li><a href="#nasa-data">NASA data used</a></li>
+        <li><a href="#flex-psi">FLEX combustion charts</a></li>
         <li><a href="#resources">Challenge resources</a></li>
         <li><a href="#data">Download the data</a></li>
       </ol>
@@ -116,7 +117,7 @@
           <li>Values marked assumed in the table header (the lander and Mars habitat volumes, the Mars atmosphere, sea-level air in the capsule) are design assumptions of this audit. Change them in the cabin builder.</li>
           <li>Partial-gravity verdicts rest on short ground tests, models and NASA assessments. No long burn has yet been recorded in true lunar or Martian gravity.</li>
           <li>The flame icons are schematic.</li>
-          <li>This version is a literature audit. Values were taken from published papers and slides, and no raw PSI dataset has been downloaded or reprocessed here.</li>
+          <li>Verdict thresholds still come from published summaries in the engine. A small <a href="#flex-psi">FLEX subset</a> from NASA PSI-69 is committed under <code>data/</code> for charts only (<a href="data/README.md">readme</a>).</li>
         </ul>
       </section>
 
@@ -125,6 +126,15 @@
         <p class="measure muted" id="psiList" data-app aria-busy="true">Loading the list of investigations.</p>
         <p class="measure muted">Saffire IV to VI and the partial-gravity ground tests come from NASA technical reports and the investigators' publications. SoFIE-MIST comes from the investigators' university. The <a href="evidence#experiments">experiments list</a> gives each investigation's records and test conditions.</p>
         <p class="measure muted">The pressurized rover volume (13 m&sup3; of living space) comes from the JAXA and Toyota pressurized rover concept, press release of 12 March 2019.</p>
+      </section>
+
+      <section id="flex-psi" aria-labelledby="flex-title">
+        <h2 id="flex-title">FLEX combustion data (PSI-69)</h2>
+        <p class="measure muted">Processed droplet-combustion measurements from the Flame Extinguishment Experiment, investigation <a class="ext" href="https://psi.nasa.gov/physci/repo/data/investigations/PSI-69" rel="noopener" target="_blank">PSI-69</a> (CC0-1.0, <a class="ext" href="https://doi.org/10.60555/mbq8-0451" rel="noopener" target="_blank">DOI 10.60555/mbq8-0451</a>). The charts illustrate microgravity burning; they do not drive the audit engine. See <a href="data/README.md">data/README.md</a> for download URLs and processing.</p>
+        <div id="flexCharts" data-app aria-busy="true" aria-live="polite">
+          <div class="skeleton" role="status"><span class="visually-hidden">Loading FLEX charts</span><i></i><i></i><i></i></div>
+        </div>
+        <p class="measure muted">The CO&#8322; chart links to the <a href="audit?env=iss&amp;row=co2#evidence-panel">CO&#8322; extinguisher rule</a>, where FLEX-derived fractions (20% heptane, 30% methanol at 1 atm) set the &ldquo;breaks&rdquo; threshold in the audit.</p>
       </section>
 
       <section id="resources" aria-labelledby="res-title">
@@ -185,5 +195,6 @@
 <script src="assets/js/si.js" defer></script>
 <script src="assets/js/ui/common.js" defer></script>
 <script src="assets/js/ui/method.js" defer></script>
+<script src="assets/js/ui/flex-chart.js" defer></script>
 </body>
 </html>
