@@ -86,6 +86,10 @@ test('exportData() matches the snapshot apart from source URLs', () => {
   const exp = clone(A.exportData(clone(A.CUSTOM_DEFAULT)));
   exp.sources.forEach((s) => delete s.url);
   exp.evidence.forEach((e) => delete e.url);
+  /* the one intentional content change: the broken Orion PDF was replaced by the current NASA edition */
+  const orion = exp.sources.find((s) => s.id === 'orion');
+  assert.equal(orion.citation, 'NASA. Orion by the Numbers. Fact sheet, 2026 edition.');
+  orion.citation = snap.exportDataWithoutUrls.sources.find((s) => s.id === 'orion').citation;
   same(exp, snap.exportDataWithoutUrls);
 });
 
