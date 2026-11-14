@@ -74,19 +74,19 @@
     <section class="tool-workspace" aria-label="Audit workspace">
     <div class="tool-grid">
       <aside class="tool-rail" aria-label="Cabin controls">
-        <div class="tool-panel">
+        <div class="tool-panel tool-panel--dest">
           <h2 class="tool-panel__title">Destination</h2>
-          <div class="chip-row" id="destChips" role="group" aria-label="Destination"></div>
+          <div class="chip-row chip-row--dest" id="destChips" role="group" aria-label="Destination"></div>
         </div>
-        <div class="tool-panel">
-          <h2 class="tool-panel__title">Cabin preset</h2>
-          <div class="chip-row chip-row--wrap" id="presetChips" role="group" aria-label="Cabin preset"></div>
-        </div>
-        <div class="tool-panel">
-          <h2 class="tool-panel__title">Environment</h2>
-          <p class="faint small">Sliders are visual in this release; values follow the preset.</p>
-          <div class="tool-sliders" id="toolSliders" aria-label="Gravity, pressure and oxygen"></div>
-        </div>
+        <details class="tool-details" id="toolAdjust">
+          <summary>Adjust cabin</summary>
+          <div class="tool-details__body">
+            <p class="tool-panel__title">Cabin preset</p>
+            <div class="chip-row chip-row--wrap" id="presetChips" role="group" aria-label="Cabin preset"></div>
+            <p class="tool-panel__title" id="tool-env-label">Environment</p>
+            <div class="tool-sliders" id="toolSliders" role="group" aria-labelledby="tool-env-label"></div>
+          </div>
+        </details>
         <p class="tool-rail__link"><a class="btn btn--ghost btn--sm" href="audit">Open full audit</a></p>
       </aside>
 
@@ -95,13 +95,13 @@
           <canvas id="flameCanvas" role="img" aria-label="Schematic flame for the selected cabin gravity."></canvas>
           <p class="tool-stage__g mono" id="stageGravity" aria-hidden="true"></p>
         </div>
-        <p class="tool-stage__cap faint small" id="stageCaption">Schematic only—interactive flame physics ships in PR2.</p>
+        <p class="tool-stage__cap faint small" id="stageCaption" hidden></p>
       </section>
 
       <aside class="tool-verdicts" aria-labelledby="verdicts-title">
         <div class="tool-verdicts__head">
           <h2 id="verdicts-title">Verdicts</h2>
-          <p class="tool-verdicts__sum mono num" id="verdictSum" data-app aria-busy="true"></p>
+          <div class="tool-verdicts__sum" id="verdictSum" data-app aria-busy="true"></div>
         </div>
         <ol class="verdict-list" id="toolVerdicts" data-app aria-busy="true" aria-live="polite">
           <li class="skeleton" role="status"><span class="visually-hidden">Loading verdicts</span><i></i><i></i><i></i></li>

@@ -74,12 +74,12 @@ BLFA.boot(function (A) {
   function renderVerdicts() {
     var e = currentEnv(), sum = A.summary(e);
     $('verdictSum').removeAttribute('aria-busy');
-    $('verdictSum').textContent = e.name + ' · ' + A.summaryText(sum.counts);
+    $('verdictSum').innerHTML = '<span class="tool-verdicts__env">' + esc(e.name) + '</span><div class="count-pills" role="status">' + B.summaryPills(sum.counts) + '</div>';
     var rows = '';
     A.ROWS.forEach(function (r, idx) {
       var v = A.evaluate(r.id, e);
       rows += '<li class="verdict-list__item v-' + v.status + '">' +
-        '<span class="verdict-list__rule"><span class="mono faint">R' + (idx < 9 ? '0' : '') + (idx + 1) + '</span> ' + esc(r.short) + '</span>' +
+        '<span class="verdict-list__rule" title="' + esc(r.short) + '"><span class="mono faint">R' + (idx < 9 ? '0' : '') + (idx + 1) + '</span> ' + esc(r.short) + '</span>' +
         '<a class="verdict-list__link" href="audit?env=' + e.id + '&amp;row=' + r.id + '#evidence-panel">' + B.verdict(v.status, true) + '</a></li>';
     });
     $('toolVerdicts').removeAttribute('aria-busy');
@@ -89,8 +89,11 @@ BLFA.boot(function (A) {
   function renderStage() {
     var e = currentEnv();
     $('stageViz').setAttribute('data-env', state.dest);
-    $('stageGravity').textContent = B.gText(e.g);
-    $('stageCaption').textContent = e.name + ' — schematic flame; live physics in PR2.';
+    var g = B.gText(e.g);
+    $('stageGravity').textContent = g;
+    var cap = $('stageCaption');
+    cap.textContent = 'Schematic flame at ' + g;
+    cap.hidden = false;
   }
 
   function paint() {
@@ -125,6 +128,18 @@ BLFA.boot(function (A) {
     var btn = ev.target.closest('[data-env]');
     if (btn) pickEnv(btn.getAttribute('data-env'));
   });
+
+  (function syncAdjustPanel() {
+    var d = $('toolAdjust');
+    if (!d || !window.matchMedia) return;
+    var mq = window.matchMedia('(min-width: 1024px)');
+    var apply = function () {
+      if (mq.matches) d.setAttribute('open', '');
+      else d.removeAttribute('open');
+    };
+    apply();
+    if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply);
+  })();
 
   paint();
   initFlame();
