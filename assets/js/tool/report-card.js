@@ -10,7 +10,7 @@
   'use strict';
 
   var W = 1200;
-  var H = 630;
+  var H = 520;
 
   var STATUS = {
     breaks: { text: '#FF8F6B', bg: '#3A1810' },
@@ -18,6 +18,27 @@
     unknown: { text: '#C5D0E0', bg: '#1A2233' },
     holds: { text: '#2FD89A', bg: '#0F2A21' }
   };
+
+  function fmtG(g) {
+    if (g == null || !isFinite(g)) return '';
+    return g < 0.01 ? '0 g' : (Math.round(g * 100) / 100) + ' g';
+  }
+
+  function fmtP(p) {
+    if (p == null || !isFinite(p)) return '';
+    return (Math.round(p * 10) / 10).toFixed(1) + ' kPa';
+  }
+
+  function fmtO2(o2) {
+    if (o2 == null || !isFinite(o2)) return '';
+    var s = o2 % 1 ? o2.toFixed(1) : String(Math.round(o2));
+    return s + '% O\u2082';
+  }
+
+  function scenarioLineFromEnv(env) {
+    if (!env || typeof env.g !== 'number') return '';
+    return fmtG(env.g) + ' · ' + fmtP(env.p) + ' · ' + fmtO2(env.o2);
+  }
 
   function buildReportCardModel(audit, env, meta) {
     if (!audit || !env) return null;
@@ -34,7 +55,7 @@
         dest: m.dest || '',
         envId: m.envId || env.id,
         subtitle: m.subtitle || env.name,
-        line: m.scenarioLine || '',
+        line: m.scenarioLine || scenarioLineFromEnv(env),
         g: env.g,
         p: env.p,
         o2: env.o2
@@ -110,24 +131,27 @@
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    drawFlameGlyph(ctx, 56, 44, 1.55);
+    var titleY = 56;
+    var titleSize = 34;
+    drawFlameGlyph(ctx, 56, titleY - titleSize * 0.42, 1.45);
 
     ctx.fillStyle = text;
-    ctx.font = '700 34px "Space Grotesk", system-ui, sans-serif';
-    ctx.fillText(model.title, 108, 62);
+    ctx.font = '700 ' + titleSize + 'px "Space Grotesk", system-ui, sans-serif';
+    ctx.fillText(model.title, 100, titleY);
 
     ctx.fillStyle = muted;
-    ctx.font = '500 20px "Space Grotesk", system-ui, sans-serif';
-    ctx.fillText(model.scenario.subtitle, 56, 96);
+    ctx.font = '500 19px "Space Grotesk", system-ui, sans-serif';
+    ctx.fillText(model.scenario.subtitle, 56, 88);
 
-    if (model.scenario.line) {
-      ctx.fillStyle = dark ? '#909AAB' : '#5A6578';
-      ctx.font = '500 18px "IBM Plex Mono", monospace';
-      ctx.fillText(model.scenario.line, 56, 122);
+    var line = model.scenario.line || scenarioLineFromEnv(model.scenario);
+    if (line) {
+      ctx.fillStyle = dark ? '#B8C0CE' : '#5A6578';
+      ctx.font = '500 17px "IBM Plex Mono", monospace';
+      ctx.fillText(line, 56, 112);
     }
 
     var cx = 56;
-    var cy = 148;
+    var cy = 136;
     var keys = ['breaks', 'weakens', 'unknown', 'holds'];
     var c = model.counts;
     keys.forEach(function (k) {
@@ -136,9 +160,9 @@
       cx += drawPill(ctx, cx, cy, word, k);
     });
 
-    var rowH = 34;
-    var gap = 6;
-    var y0 = 186;
+    var rowH = 40;
+    var gap = 8;
+    var y0 = 168;
     var colW = (W - 112 - 16) / 2;
     model.rules.forEach(function (r, i) {
       var col = i < 5 ? 0 : 1;
@@ -165,7 +189,8 @@
       ctx.fillText(r.label, x + colW - 14 - lw, y + 22);
     });
 
-    var footY = H - 88;
+    var lastRuleBottom = y0 + 4 * (rowH + gap) + rowH;
+    var footY = Math.max(lastRuleBottom + 16, H - 72);
     ctx.fillStyle = dark ? '#10151C' : '#E8E2D8';
     ctx.fillRect(0, footY, W, 88);
     ctx.strokeStyle = line;

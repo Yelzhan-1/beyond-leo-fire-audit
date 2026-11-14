@@ -14,6 +14,7 @@ if (!process.env.BLFA_URL) {
 
 const shots = [
   ['index-default-dark', '/', 1440, 1000, 'dark'],
+  ['index-mars-cmp-toolbar', '/?d=mars&cmp=iss', 1440, 1000, 'dark'],
   ['index-default-light', '/', 1440, 1000, 'light'],
   ['index-compare-desktop', '/?d=mars&cmp=iss', 1440, 1000, 'dark', 'compare', 'tall'],
   ['index-compare-mobile', '/?d=mars&cmp=iss', 390, 844, 'dark', 'compare'],

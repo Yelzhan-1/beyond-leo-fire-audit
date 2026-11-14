@@ -13,6 +13,8 @@ test('buildReportCardModel returns 10 rules and counts', () => {
   assert.equal(model.rules[0].num, 'R01');
   assert.ok(model.counts.breaks >= 0);
   assert.match(model.footer, /NASA PSI/);
+  assert.match(model.scenario.line, /kPa/);
+  assert.match(model.scenario.line, /O\u2082/);
 });
 
 test('countLine omits zero buckets', () => {

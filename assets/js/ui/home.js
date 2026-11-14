@@ -541,7 +541,7 @@ BLFA.boot(function (A) {
       dest: state.dest,
       envId: state.envId,
       subtitle: envSubtitle(e),
-      scenarioLine: B.gText(e.g) + ' · ' + A.fmt(e.p, 1) + ' kPa · ' + B.o2Text(e.o2),
+      scenarioLine: B.gText(e.g) + ' · ' + A.fmt(e.p, 1) + ' kPa · ' + B.o2Text(e.o2) + ' O\u2082',
       siteUrl: reportSiteUrl()
     });
     var cv = document.createElement('canvas');
