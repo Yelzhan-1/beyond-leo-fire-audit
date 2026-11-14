@@ -131,3 +131,4 @@ code, kbd, samp { font-family: var(--font-mono); font-size: 0.9em; }
   .site-header, .site-footer, .skip-link { display: none; }
   body { background: #fff; color: #000; }
 }
+.nowrap { white-space: nowrap; }
