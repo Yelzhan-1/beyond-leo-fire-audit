@@ -58,6 +58,31 @@
     return '<span class="verdict v-' + st + (small ? ' verdict--sm' : '') + '">' + icon(st) + root.AUDIT.STATUS[st].label + '</span>';
   }
 
+  var COUNT_WORDS = {
+    breaks: ['break', 'breaks'],
+    weakens: ['weaken', 'weakens'],
+    unknown: ['unknown', 'unknown'],
+    holds: ['hold', 'holds']
+  };
+
+  function countWord(k, n) { return n === 1 ? COUNT_WORDS[k][0] : COUNT_WORDS[k][1]; }
+
+  function summaryPills(counts, opts) {
+    var sep = opts && opts.sep;
+    var keys = ['breaks', 'weakens', 'unknown', 'holds'];
+    var parts = keys.filter(function (k) { return counts[k] > 0; }).map(function (k) {
+      return '<span class="count-pill v-' + k + '"><span class="num mono">' + counts[k] + '</span> ' + countWord(k, counts[k]) + '</span>';
+    });
+    return parts.join(sep != null ? sep : ' ');
+  }
+
+  function legendPills(counts) {
+    var keys = ['breaks', 'weakens', 'unknown', 'holds'];
+    return keys.filter(function (k) { return counts[k] > 0; }).map(function (k) {
+      return '<li class="legend-pill v-' + k + '"><span class="legend-pill__n num mono">' + counts[k] + '</span>' + verdict(k, true) + '</li>';
+    }).join('');
+  }
+
   /* Schematic flame: a sphere without gravity, stretching upward as buoyancy returns. */
   function flame(g, h) {
     var H = h || 34, W = Math.round(H * 28 / 34);
@@ -127,7 +152,7 @@
     loadCustom: loadCustom, saveCustom: saveCustom,
     $: $, esc: esc, boot: boot, showError: showError, errorState: errorState, reducedMotion: reducedMotion,
     params: params, setParams: setParams, gText: gText, vText: vText, o2Text: o2Text,
-    icon: icon, verdict: verdict, flame: flame, ext: ext, srcLinks: srcLinks, invLinks: invLinks, DIR: DIR, evItem: evItem,
+    icon: icon, verdict: verdict, summaryPills: summaryPills, legendPills: legendPills, flame: flame, ext: ext, srcLinks: srcLinks, invLinks: invLinks, DIR: DIR, evItem: evItem,
     scrollToNode: scrollToNode, debounce: debounce, copyText: copyText, vFromSlider: vFromSlider, sliderFromV: sliderFromV
   };
 })(window);

@@ -33,7 +33,7 @@
   function paint() {
     var t = current();
     if (themeBtn) themeBtn.setAttribute('aria-label', t === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme');
-    if (meta) meta.setAttribute('content', t === 'dark' ? '#070a10' : '#f3f5f9');
+    if (meta) meta.setAttribute('content', t === 'dark' ? '#0B0E14' : '#F4F1EA');
   }
   if (themeBtn) {
     themeBtn.addEventListener('click', function () {

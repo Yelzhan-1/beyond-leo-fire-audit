@@ -10,11 +10,11 @@ const PAGES = listPages();
 const html = Object.fromEntries(PAGES.map((f) => [f, read(f)]));
 
 const NAV = [
-  ['./', 'Overview'],
+  ['./', 'Tool'],
   ['audit', 'Audit'],
   ['evidence', 'Evidence'],
   ['calculators', 'Calculators'],
-  ['method', 'Method & data'],
+  ['method', 'Method'],
   ['about', 'About'],
 ];
 const EXPECTED_PAGES = ['404.html', 'about.html', 'audit.html', 'calculators.html', 'evidence.html', 'index.html', 'method.html'];
@@ -138,4 +138,15 @@ test('every source has a short label for citations', () => {
 test('vercel.json turns on clean URLs', () => {
   const v = JSON.parse(read('vercel.json'));
   assert.equal(v.cleanUrls, true);
+});
+
+test('index tool workspace lists ten rules via the engine for every preset cabin', () => {
+  const A = loadAudit();
+  const index = read('index.html');
+  assert.match(index, /id="toolVerdicts"/, 'index has a verdict list mount');
+  assert.match(index, /id="destChips"/, 'index has destination chips');
+  for (const e of A.ENVS) {
+    assert.equal(A.summary(e).verdicts.length, 10, `${e.id} yields ten verdicts`);
+  }
+  assert.equal(A.summary(A.CUSTOM_DEFAULT).verdicts.length, 10, 'custom default yields ten verdicts');
 });

@@ -30,8 +30,7 @@ BLFA.boot(function (A) {
 
   /* ---------- legend ---------- */
   function renderLegend() {
-    var items = [['holds', 'Holds'], ['weakens', 'Weakens'], ['breaks', 'Breaks'], ['unknown', 'Unknown']];
-    $('legend').innerHTML = items.map(function (x) { return '<li class="v-' + x[0] + '">' + B.verdict(x[0]) + '<span>' + x[1] + '</span></li>'; }).join('');
+    $('legend').innerHTML = B.legendPills(A.summary(env()).counts);
   }
 
   /* ---------- cabin picker (small screens) ---------- */
@@ -122,10 +121,13 @@ BLFA.boot(function (A) {
     inv.forEach(function (x) {
       h += '<li><div class="rank__name">' + esc(x.inv.name) + ' <span class="rank__full">' + B.invLinks(x.inv) + '</span></div>' +
         '<div class="rank__full">' + esc(x.inv.full) + '. ' + esc(x.inv.where) + '.</div>' +
-        '<div class="rank__bar" role="img" aria-label="Score ' + A.fmt(x.score, 1) + ' points"><i style="width:' + Math.max(4, Math.round(x.score / top * 100)) + '%"></i></div>' +
+        '<div class="rank__bar" role="img" aria-label="Score ' + A.fmt(x.score, 1) + ' points"><i data-w="' + Math.max(4, Math.round(x.score / top * 100)) + '"></i></div>' +
         '<div class="rank__rows"><span class="num">' + A.fmt(x.score, 1) + '</span> points. ' + x.rows.map(function (rr) { return rr.how === 'direct' ? esc(rr.row.short) : '<span class="faint">' + esc(rr.row.short) + ' (other conditions)</span>'; }).join(', ') + '</div></li>';
     });
     var $inv = $('rankInv'); $inv.innerHTML = h + '</ol>';
+    [].forEach.call($inv.querySelectorAll('.rank__bar i[data-w]'), function (bar) {
+      bar.style.setProperty('width', bar.getAttribute('data-w') + '%');
+    });
     var g = '<h3>Open questions ranked by distance from a measurement</h3><p class="note">Unknowns come first, then verdicts that rest on a NASA assessment, short ground tests or data carried over from 0 g.</p>';
     if (!gaps.length) g += '<div class="state state--empty"><h3>No open questions here</h3><p>Every verdict for this cabin rests on a measurement in matching conditions or on current practice.</p></div>';
     g += '<ol class="rank">';
@@ -147,7 +149,7 @@ BLFA.boot(function (A) {
     syncBuilder(); B.saveCustom(state.custom);
     state.env = 'custom';
     B.setParams({ env: state.env, row: state.row });
-    renderMatrix(); renderPicker(); markSelection(); renderDetail(); renderRanks(); renderReadout();
+    renderMatrix(); renderPicker(); markSelection(); renderDetail(); renderRanks(); renderReadout(); renderLegend();
   }
   function initBuilder() {
     var c = state.custom;
@@ -184,7 +186,7 @@ BLFA.boot(function (A) {
   function select(envId, rowId, open) {
     state.env = envId; if (rowId) state.row = rowId;
     B.setParams({ env: state.env, row: state.row });
-    markSelection(); renderDetail(); renderRanks(); renderReadout();
+    markSelection(); renderDetail(); renderRanks(); renderReadout(); renderLegend();
     if (open) {
       setDrawerOpen(true);
       try { history.replaceState(null, '', window.location.pathname + '?' + new URLSearchParams({ env: state.env, row: state.row }).toString() + '#evidence-panel'); } catch (e) { /* */ }

@@ -7,12 +7,28 @@ BLFA.boot(function (A) {
 
   function allEnvs() { return A.ENVS.concat([custom]); }
 
-  /* A bar on a log scale with labelled limits. */
-  function meter(x, min, max, ticks, cls) {
-    function pos(v) { var p = (Math.log(v) - Math.log(min)) / (Math.log(max) - Math.log(min)); return Math.max(0, Math.min(1, p)) * 100; }
-    return '<div class="meter ' + cls + '" role="img" aria-label="' + esc(ticks.map(function (t) { return t.label; }).join('; ')) + '"><span class="meter__fill" style="width:' + pos(Math.max(x, min)).toFixed(1) + '%"></span>' +
-      ticks.map(function (t, i) { return '<span class="meter__tick' + (i % 2 ? ' meter__tick--up' : '') + '" style="left:' + pos(t.v).toFixed(1) + '%"><span>' + esc(t.label) + '</span></span>'; }).join('') + '</div>';
+  function logPos(v, min, max) {
+    var p = (Math.log(v) - Math.log(min)) / (Math.log(max) - Math.log(min));
+    return Math.max(0, Math.min(1, p)) * 100;
   }
+
+  /* A bar on a log scale with labelled limits. Widths are set on the live DOM (CSP-safe). */
+  function meterShell(ticks, cls, label) {
+    return '<div class="meter ' + cls + '" role="img" aria-label="' + esc(label) + '"><span class="meter__fill"></span>' +
+      ticks.map(function (t, i) {
+        return '<span class="meter__tick' + (i % 2 ? ' meter__tick--up' : '') + '" data-v="' + t.v + '"><span>' + esc(t.label) + '</span></span>';
+      }).join('') + '</div>';
+  }
+
+  function layoutMeter(el, x, min, max) {
+    if (!el) return;
+    var fill = el.querySelector('.meter__fill');
+    if (fill) fill.style.setProperty('width', logPos(Math.max(x, min), min, max).toFixed(1) + '%');
+    [].forEach.call(el.querySelectorAll('.meter__tick[data-v]'), function (tick) {
+      tick.style.setProperty('left', logPos(parseFloat(tick.getAttribute('data-v')), min, max).toFixed(1) + '%');
+    });
+  }
+
   function big(cls, value, unit, flagStatus, flagText) {
     return '<div class="calc__big ' + cls + '"><span class="num">' + value + '</span><small>' + unit + '</small></div>' +
       (flagStatus ? '<p class="calc__flag v-' + flagStatus + '">' + B.icon(flagStatus) + '<span>' + flagText + '</span></p>' : '');
@@ -32,10 +48,12 @@ BLFA.boot(function (A) {
     $('okMult').textContent = A.fmt(k.mult * A.SAF6.kJ / 1000, 2) + ' MJ'; $('okCfm').textContent = A.fmt(k.cfm, 0) + ' cfm'; $('okEff').textContent = A.fmt(k.eff, 0) + '%';
 
     var c = A.co2Discharge(e, k.kg), st1 = c.mmHg > A.CO2_IDLH_MMHG ? 'breaks' : (c.mmHg > A.LIMITS.co2_1h_mmHg ? 'weakens' : 'holds');
+    var co2Ticks = [{ v: 3, label: '3 mmHg, 1 h limit' }, { v: A.CO2_IDLH_MMHG, label: '30 mmHg, immediate danger' }];
     $('c1').innerHTML = big('v-' + st1, A.sig(c.mmHg), 'mmHg of CO\u2082', st1, st1 === 'breaks' ? 'Above the 30 mmHg immediate-danger level' : (st1 === 'weakens' ? 'Above the 3 mmHg one-hour limit' : 'Below the 3 mmHg one-hour limit')) +
       '<p class="calc__read">' + A.sig(c.fractionPct) + '% of the cabin gas, ' + A.sig(c.timesLimit) + ' times the one-hour limit. Cabin pressure rises to ' + A.fmt(c.newPressureKPa, 1) + ' kPa.</p>' +
-      meter(c.mmHg, 0.3, 400, [{ v: 3, label: '3 mmHg, 1 h limit' }, { v: A.CO2_IDLH_MMHG, label: '30 mmHg, immediate danger' }], 'v-' + st1) +
+      meterShell(co2Ticks, 'v-' + st1, co2Ticks.map(function (t) { return t.label; }).join('; ')) +
       '<p class="calc__read">To stop steady droplet burning by flooding, FLEX needed 20% CO\u2082 for heptane and 30% for methanol. In this cabin that is ' + A.sig(A.floodKg(e, A.FLEX.heptane)) + ' kg and ' + A.sig(A.floodKg(e, A.FLEX.methanol)) + ' kg of CO\u2082.</p>';
+    layoutMeter($('c1').querySelector('.meter'), c.mmHg, 0.3, 400);
 
     var m = A.maskO2(e), after = A.o2After(e, k.litres);
     var crossing = after >= A.BRE_STEADY_O2 && k.o2 < A.BRE_STEADY_O2;
@@ -45,10 +63,12 @@ BLFA.boot(function (A) {
 
     var f = A.fireScale(e, k.mult), st3 = f.coPpm > A.LIMITS.co_1h_ppm ? 'breaks' : ((f.coPpm > A.LIMITS.co_24h_ppm || f.co2mmHg > A.LIMITS.co2_1h_mmHg) ? 'weakens' : 'holds');
     var t = A.cleanupMinutes(k.v, f.coPpm, A.LIMITS.co_24h_ppm, k.cfm, k.eff / 100);
+    var coTicks = [{ v: A.LIMITS.co_24h_ppm, label: '100 ppm, 24 h limit' }, { v: A.LIMITS.co_1h_ppm, label: '425 ppm, 1 h limit' }];
     $('c3').innerHTML = big('v-' + st3, A.sig(f.coPpm), 'ppm of carbon monoxide', st3, st3 === 'breaks' ? 'Above the 425 ppm one-hour limit' : (st3 === 'weakens' ? 'Above the 100 ppm 24-hour limit or the CO\u2082 limit' : 'Within the CO and CO\u2082 limits')) +
       '<p class="calc__read">' + A.sig(f.coGrams) + ' g of CO in the cabin, with CO\u2082 up by ' + A.sig(f.co2mmHg) + ' mmHg' + (f.co2mmHg > A.LIMITS.co2_1h_mmHg ? ', above the 3 mmHg one-hour limit.' : ', below the 3 mmHg one-hour limit.') + '</p>' +
-      meter(f.coPpm, 3, 3000, [{ v: A.LIMITS.co_24h_ppm, label: '100 ppm, 24 h limit' }, { v: A.LIMITS.co_1h_ppm, label: '425 ppm, 1 h limit' }], 'v-' + st3) +
+      meterShell(coTicks, 'v-' + st3, coTicks.map(function (tick) { return tick.label; }).join('; ')) +
       '<p class="calc__read">' + (t > 0 ? 'A scrubber at this flow and efficiency needs about ' + (t >= 120 ? A.fmt(t / 60, 1) + ' hours' : A.fmt(t, 0) + ' minutes') + ' to bring CO back under 100 ppm.' : 'CO stays under the 100 ppm 24-hour limit, so no scrubbing time is needed.') + '</p>';
+    layoutMeter($('c3').querySelector('.meter'), f.coPpm, 3, 3000);
     [].forEach.call(document.querySelectorAll('.calc__out'), function (n) { n.removeAttribute('aria-busy'); });
   }
 

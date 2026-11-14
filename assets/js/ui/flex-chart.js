@@ -72,8 +72,9 @@
       dots += '<circle cx="' + ax.scale.x(r.co2) + '" cy="' + ax.scale.y(r.K_mm2_per_s) + '" r="5" fill="' + cols[r.fuel] + '" opacity="0.9"><title>' +
         esc(r.fuel + ' ' + r.testId + ', CO\u2082=' + (r.co2 * 100).toFixed(0) + '%, K=' + r.K_mm2_per_s) + '</title></circle>';
     });
+    var legClass = { Methanol: 'chart-leg__swatch--methanol', Heptane: 'chart-leg__swatch--heptane' };
     var leg = fuels.map(function (f) {
-      return '<span class="chart-leg"><i style="background:' + cols[f] + '"></i>' + f + '</span>';
+      return '<span class="chart-leg"><i class="chart-leg__swatch ' + legClass[f] + '" aria-hidden="true"></i>' + f + '</span>';
     }).join('');
     return '<figure class="chart-card"><svg class="chart-svg" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Burning rate constant versus carbon dioxide mole fraction from FLEX PSI data at about one atmosphere">' +
       ax.svg + dots +
