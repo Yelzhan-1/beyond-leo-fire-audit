@@ -7,9 +7,12 @@
   },
   "description": "Static site: Beyond LEO Fire Audit (NASA Space Apps 2026)",
   "scripts": {
+    "start": "node scripts/serve.mjs",
+    "sync": "node scripts/sync-partials.mjs",
+    "check:json": "node scripts/check-json.mjs",
+    "lint:html": "html-validate \"*.html\"",
     "test": "node --test",
-    "lint:html": "html-validate index.html",
-    "check:json": "node scripts/check-json.mjs"
+    "check": "npm run check:json && npm run lint:html && npm test"
   },
   "devDependencies": {
     "html-validate": "^11.21.1"
