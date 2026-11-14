@@ -96,6 +96,7 @@
           <p class="tool-stage__g mono" id="stageGravity" aria-hidden="true"></p>
         </div>
         <p class="tool-stage__cap faint small" id="stageCaption" hidden></p>
+        <div class="tool-mobile-g" id="toolMobileG"></div>
       </section>
 
       <aside class="tool-verdicts" aria-labelledby="verdicts-title">
@@ -111,6 +112,21 @@
     </section>
 
     <p class="tool-foot faint small"><a href="method#context">Why ISS rules do not carry over</a> · <a href="method#si">Verdicts are rules, not model output</a></p>
+  </div>
+
+  <div id="evidence-panel" class="ev-drawer" hidden aria-hidden="true">
+    <button type="button" class="ev-drawer__scrim" aria-label="Close evidence panel" data-drawer-close></button>
+    <div class="ev-drawer__sheet" role="dialog" aria-modal="true" aria-labelledby="detail-heading" tabindex="-1">
+      <div class="ev-drawer__bar">
+        <p class="ev-drawer__label" id="detail-title">Evidence</p>
+        <button type="button" class="icon-btn ev-drawer__close" aria-label="Close evidence panel" data-drawer-close>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="ev-drawer__body" id="detail" aria-live="polite" data-app aria-busy="true">
+        <div class="skeleton" role="status"><span class="visually-hidden">Loading evidence</span><i></i><i></i></div>
+      </div>
+    </div>
   </div>
 </main>
 <!-- partial:footer -->
@@ -153,7 +169,11 @@
 <script src="assets/js/data/investigations.js" defer></script>
 <script src="assets/js/data/environments.js" defer></script>
 <script src="assets/js/engine.js" defer></script>
+<script src="assets/js/tool/scenario.js" defer></script>
+<script src="assets/js/tool/flame-geom.js" defer></script>
 <script src="assets/js/ui/common.js" defer></script>
+<script src="assets/js/ui/detail-panel.js" defer></script>
+<script src="assets/js/ui/drawer.js" defer></script>
 <script src="assets/js/ui/home.js" defer></script>
 </body>
 </html>

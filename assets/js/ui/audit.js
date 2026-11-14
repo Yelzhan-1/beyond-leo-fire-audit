@@ -89,28 +89,10 @@ BLFA.boot(function (A) {
     });
   }
 
-  /* ---------- evidence panel ---------- */
   function renderDetail() {
-    var e = env(), v = A.evaluate(state.row, e), r = v.row, gap = r.gap(e);
-    var h = '<article class="detail"><div class="detail__main"><p class="detail__where kicker">' + esc(r.phase) + ' rule, checked for ' + esc(e.phrase) + '</p>' +
-      '<h3 class="detail__title" id="detail-heading" tabindex="-1">' + esc(r.title) + '</h3>' +
-      '<div class="detail__verdict">' + B.verdict(v.status) + '<span class="muted small">Basis: ' + esc(v.basisLabel) + '</span></div>' +
-      '<p class="detail__why">' + esc(v.why) + '</p>' +
-      '<div class="cluster"><button type="button" class="btn btn--ghost btn--sm" id="backTop">Back to the table</button>' +
-      '<button type="button" class="btn btn--ghost btn--sm" id="copyLink">Copy link to this cell</button><span class="small muted" id="copyMsg" role="status"></span></div>' +
-      '<h4 class="detail__sub">Evidence that applies to this cabin</h4>';
-    h += v.direct.length ? '<ul class="ev-list">' + v.direct.map(B.evItem).join('') + '</ul>' : '<p class="small muted">No record in this audit was measured under conditions that match this cabin.</p>';
-    if (v.related.length) h += '<details class="disclosure"><summary>Evidence on this rule measured under other conditions (' + v.related.length + ')</summary><div class="disclosure__body"><ul class="ev-list">' + v.related.map(B.evItem).join('') + '</ul></div></details>';
-    h += '</div><aside class="detail__side" aria-label="Context for this rule">' +
-      '<h4 class="detail__sub">What the ISS does today</h4><p>' + esc(r.practice) + '</p><p class="srcs">Source: ' + B.srcLinks(r.practiceSrc) + '</p>' +
-      '<h4 class="detail__sub">How this verdict is decided</h4><p>' + esc(r.rule) + '</p>' + (r.ruleSrc ? '<p class="srcs">Thresholds from: ' + B.srcLinks(r.ruleSrc) + '</p>' : '') +
-      '<h4 class="detail__sub">What replaces the rule</h4><p>' + esc(r.next) + '</p><p class="srcs">Source: ' + B.srcLinks(r.nextSrc) + '</p>';
-    if (r.earth) h += '<h4 class="detail__sub">Use on Earth</h4><p>' + esc(r.earth) + '</p><p class="srcs">Source: ' + B.srcLinks(r.earthSrc) + '</p>';
-    if (gap) h += '<h4 class="detail__sub">Still open</h4><p>' + esc(gap) + '</p>';
-    if (e.notes) h += '<h4 class="detail__sub">Cabin conditions</h4><p>' + esc(e.notes) + '</p>' + (e.src && e.src.length ? '<p class="srcs">Source: ' + B.srcLinks(e.src) + '</p>' : '');
     var host = $('detail');
     host.removeAttribute('aria-busy');
-    host.innerHTML = h + '</aside></article>';
+    host.innerHTML = B.renderDetail(A, env(), state.row, { compact: false });
   }
 
   /* ---------- rankings ---------- */
@@ -166,33 +148,56 @@ BLFA.boot(function (A) {
     syncBuilder();
   }
 
-  /* ---------- selection ---------- */
-  var drawer = $('evidence-panel'), sheet = drawer && drawer.querySelector('.ev-drawer__sheet'), lastFocus = null;
-
-  function setDrawerOpen(open) {
-    if (!drawer) return;
-    drawer.hidden = !open;
-    document.documentElement.classList.toggle('ev-drawer-open', open);
-    if (open) {
-      lastFocus = document.activeElement;
-      drawer.removeAttribute('aria-hidden');
-      try { sheet.focus(); } catch (e) { /* */ }
-    } else {
-      drawer.setAttribute('aria-hidden', 'true');
-      if (lastFocus && lastFocus.focus) try { lastFocus.focus({ preventScroll: true }); } catch (e2) { lastFocus.focus(); }
+  var drawerCtl = B.initEvidenceDrawer({
+    root: $('evidence-panel'),
+    bodyEl: $('detail'),
+    onBodyClick: function (ev) {
+      if (ev.target.closest('#backTop')) {
+        drawerCtl.setOpen(false);
+        var sel = document.querySelector('#matrix .cell[aria-pressed="true"]') || document.querySelector('#matrix .cell');
+        var target = DESKTOP.matches ? $('matrix') : $('picker');
+        B.scrollToNode(target);
+        if (sel && sel.offsetParent !== null) { try { sel.focus({ preventScroll: true }); } catch (e) { sel.focus(); } }
+      } else if (ev.target.closest('#copyLink')) {
+        var msg = $('copyMsg');
+        B.copyText(window.location.href).then(function () { msg.textContent = 'Link copied.'; }, function () { msg.textContent = 'Copy the address from the browser bar.'; });
+        setTimeout(function () { msg.textContent = ''; }, 2500);
+      }
     }
-  }
+  });
 
   function select(envId, rowId, open) {
     state.env = envId; if (rowId) state.row = rowId;
     B.setParams({ env: state.env, row: state.row });
     markSelection(); renderDetail(); renderRanks(); renderReadout(); renderLegend();
     if (open) {
-      setDrawerOpen(true);
-      try { history.replaceState(null, '', window.location.pathname + '?' + new URLSearchParams({ env: state.env, row: state.row }).toString() + '#evidence-panel'); } catch (e) { /* */ }
+      drawerCtl.setOpen(true);
+      try {
+        history.replaceState(null, '', window.location.pathname + '?' + new URLSearchParams({ env: state.env, row: state.row }).toString() + '#evidence-panel');
+      } catch (e) { /* */ }
       var h = $('detail-heading');
-      if (h) B.scrollToNode(h, true);
+      if (h) {
+        try { h.focus({ preventScroll: true }); } catch (e3) { h.focus(); }
+      }
     }
+  }
+
+  function clearMatrixHover() {
+    [].forEach.call(document.querySelectorAll('.matrix-row--hover, .matrix-col--hover'), function (n) {
+      n.classList.remove('matrix-row--hover', 'matrix-col--hover');
+    });
+  }
+
+  function setMatrixHover(cell) {
+    clearMatrixHover();
+    if (!cell) return;
+    var tr = cell.closest('tr');
+    if (tr) tr.classList.add('matrix-row--hover');
+    var envId = cell.getAttribute('data-env');
+    if (!envId) return;
+    [].forEach.call(document.querySelectorAll('#matrix [data-env="' + envId + '"]'), function (n) {
+      if (n.tagName === 'TD' || n.classList.contains('colhead')) n.classList.add('matrix-col--hover');
+    });
   }
 
   function init() {
@@ -206,25 +211,21 @@ BLFA.boot(function (A) {
     $('matrix').addEventListener('click', onPick);
     $('picker').addEventListener('click', onPick);
 
-    [].forEach.call(document.querySelectorAll('[data-drawer-close]'), function (btn) {
-      btn.addEventListener('click', function () { setDrawerOpen(false); });
+    $('matrix').addEventListener('mouseover', function (ev) {
+      var cell = ev.target.closest('.cell');
+      if (cell) setMatrixHover(cell);
     });
-  document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && drawer && !drawer.hidden) { ev.preventDefault(); setDrawerOpen(false); }
+    $('matrix').addEventListener('mouseleave', function (ev) {
+      if (!ev.relatedTarget || !ev.currentTarget.contains(ev.relatedTarget)) clearMatrixHover();
     });
-
-    $('detail').addEventListener('click', function (ev) {
-      if (ev.target.closest('#backTop')) {
-        setDrawerOpen(false);
-        var sel = document.querySelector('#matrix .cell[aria-pressed="true"]') || document.querySelector('#matrix .cell');
-        var target = DESKTOP.matches ? $('matrix') : $('picker');
-        B.scrollToNode(target);
-        if (sel && sel.offsetParent !== null) { try { sel.focus({ preventScroll: true }); } catch (e) { sel.focus(); } }
-      } else if (ev.target.closest('#copyLink')) {
-        var msg = $('copyMsg');
-        B.copyText(window.location.href).then(function () { msg.textContent = 'Link copied.'; }, function () { msg.textContent = 'Copy the address from the browser bar.'; });
-        setTimeout(function () { msg.textContent = ''; }, 2500);
-      }
+    $('matrix').addEventListener('focusin', function (ev) {
+      var cell = ev.target.closest('.cell');
+      if (cell) setMatrixHover(cell);
+    });
+    $('matrix').addEventListener('focusout', function () {
+      setTimeout(function () {
+        if (!document.querySelector('#matrix .cell:focus')) clearMatrixHover();
+      }, 0);
     });
 
     /* Arrow keys move between cells, as in a grid. */
@@ -239,7 +240,7 @@ BLFA.boot(function (A) {
     });
 
     if (window.location.hash === '#evidence-panel') {
-      setDrawerOpen(true);
+      drawerCtl.setOpen(true);
       var dh = $('detail-heading');
       if (dh) B.scrollToNode(dh, true);
     }
