@@ -10,7 +10,14 @@
   'use strict';
 
   var DEST_DEFAULT_ENV = { iss: 'iss', moon: 'lander', mars: 'mars', custom: 'custom' };
+  var DEFAULT_PRESET_ID = 'lander';
   var GRAVITY_TICKS = [0, 0.16, 0.38, 1];
+  var GRAVITY_TICK_LABELS = [
+    { g: 0, label: 'ISS 0' },
+    { g: 0.16, label: 'Moon 0.16' },
+    { g: 0.38, label: 'Mars 0.38' },
+    { g: 1, label: 'Earth 1' }
+  ];
 
   var SLIDER = {
     g: { min: 0, max: 1, step: 0.01 },
@@ -49,6 +56,7 @@
 
     var env = p.get('env');
     var d = p.get('d');
+    if (d && !envIdFromDest(d)) d = null;
     var envId = env || (d ? envIdFromDest(d) : null);
     var dest = d || (envId ? destFromEnvId(envId) : null);
 
@@ -89,22 +97,85 @@
   function sliderToEnvField(key, raw) {
     var b = SLIDER[key];
     if (!b) return null;
-    var v = clamp(num(raw), b.min, b.max);
+    var n = num(raw);
+    if (n == null) return null;
+    var v = clamp(n, b.min, b.max);
     if (key === 'g') return Math.round(v * 100) / 100;
     if (key === 'p') return Math.round(v * 10) / 10;
     return Math.round(v * 10) / 10;
   }
 
   function applyScenarioToEnv(base, parsed) {
+    if (!base) return null;
     var e = JSON.parse(JSON.stringify(base));
-    if (parsed.g != null) e.g = sliderToEnvField('g', parsed.g);
-    if (parsed.p != null) e.p = sliderToEnvField('p', parsed.p);
-    if (parsed.o2 != null) e.o2 = sliderToEnvField('o2', parsed.o2);
+    if (parsed.g != null) {
+      var g = sliderToEnvField('g', parsed.g);
+      if (g != null) e.g = g;
+    }
+    if (parsed.p != null) {
+      var p = sliderToEnvField('p', parsed.p);
+      if (p != null) e.p = p;
+    }
+    if (parsed.o2 != null) {
+      var o2 = sliderToEnvField('o2', parsed.o2);
+      if (o2 != null) e.o2 = o2;
+    }
     return e;
+  }
+
+  function cloneEnvObj(e) {
+    return e ? JSON.parse(JSON.stringify(e)) : null;
+  }
+
+  function findEnvById(envs, customDefault, getCustom, id) {
+    if (id === 'custom' && getCustom) return cloneEnvObj(getCustom());
+    for (var i = 0; i < (envs || []).length; i++) {
+      if (envs[i].id === id) return cloneEnvObj(envs[i]);
+    }
+    if (customDefault && customDefault.id === id) return cloneEnvObj(customDefault);
+    return null;
+  }
+
+  function validPresetId(envs, id) {
+    if (id === 'custom') return true;
+    return (envs || []).some(function (e) { return e.id === id; });
+  }
+
+  /** Build live cabin + envId/dest from URL params (no DOM). */
+  function resolveScenarioFromUrl(parsed, envs, customDefault, getCustom) {
+    var envId = null;
+    var dest = null;
+
+    if (parsed.envId && validPresetId(envs, parsed.envId)) envId = parsed.envId;
+    if (parsed.dest && envIdFromDest(parsed.dest)) dest = parsed.dest;
+
+    var base = findEnvById(envs, customDefault, getCustom, envId || DEFAULT_PRESET_ID);
+    if (!base) base = findEnvById(envs, customDefault, getCustom, DEFAULT_PRESET_ID);
+
+    var live = applyScenarioToEnv(base, parsed) || cloneEnvObj(base);
+    var matched = matchPresetId(live, envs, customDefault);
+    if (matched === 'custom' && getCustom) {
+      live.id = 'custom';
+      live.custom = true;
+    } else {
+      var preset = findEnvById(envs, customDefault, null, matched);
+      if (preset) {
+        live.name = preset.name;
+        live.phrase = preset.phrase;
+        live.kind = preset.kind;
+        live.id = matched;
+      }
+    }
+
+    dest = dest || destFromEnvId(matched);
+    if (matched === 'custom' && (parsed.g != null || parsed.p != null || parsed.o2 != null) && !parsed.dest) dest = 'custom';
+
+    return { live: live, envId: matched, dest: dest };
   }
 
   /** If g,p,o2,v,dust,beyond match a preset, return its id; else custom. */
   function matchPresetId(live, envs, customDefault) {
+    if (!live || typeof live.g !== 'number' || !isFinite(live.g)) return 'custom';
     var list = (envs || []).concat(customDefault ? [customDefault] : []);
     for (var i = 0; i < list.length; i++) {
       var p = list[i];
@@ -119,12 +190,15 @@
 
   return {
     DEST_DEFAULT_ENV: DEST_DEFAULT_ENV,
+    DEFAULT_PRESET_ID: DEFAULT_PRESET_ID,
     GRAVITY_TICKS: GRAVITY_TICKS,
+    GRAVITY_TICK_LABELS: GRAVITY_TICK_LABELS,
     SLIDER: SLIDER,
     parseScenarioQuery: parseScenarioQuery,
     serializeScenario: serializeScenario,
     sliderToEnvField: sliderToEnvField,
     applyScenarioToEnv: applyScenarioToEnv,
+    resolveScenarioFromUrl: resolveScenarioFromUrl,
     matchPresetId: matchPresetId,
     envIdFromDest: envIdFromDest,
     destFromEnvId: destFromEnvId,

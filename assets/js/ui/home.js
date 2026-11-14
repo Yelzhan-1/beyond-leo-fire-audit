@@ -57,32 +57,14 @@ BLFA.boot(function (A) {
 
   (function readUrl() {
     var parsed = S.parseScenarioQuery(window.location.search);
-    if (parsed.envId && validEnv(parsed.envId)) {
-      state.envId = parsed.envId;
-      state.live = loadEnvById(parsed.envId);
-      state.live = S.applyScenarioToEnv(state.live, parsed);
-    } else if (parsed.dest && S.envIdFromDest(parsed.dest)) {
-      state.envId = S.envIdFromDest(parsed.dest);
-      state.live = loadEnvById(state.envId);
-      state.live = S.applyScenarioToEnv(state.live, parsed);
-    }
-    state.dest = parsed.dest || S.destFromEnvId(state.envId);
+    var seed = S.resolveScenarioFromUrl(parsed, A.ENVS, A.CUSTOM_DEFAULT, B.loadCustom);
+    state.envId = seed.envId;
+    state.live = cloneEnv(seed.live);
+    state.dest = seed.dest;
     state.row = parsed.row && A.rowById(parsed.row) ? parsed.row : null;
-    state.envId = S.matchPresetId(state.live, A.ENVS, A.CUSTOM_DEFAULT);
-    if (state.envId === 'custom') {
-      var c = B.loadCustom();
-      ['g', 'p', 'o2', 'v', 'dust', 'beyond'].forEach(function (k) { c[k] = state.live[k]; });
-      B.saveCustom(c);
-      state.live = cloneEnv(c);
-    }
+    if (state.envId === 'custom') B.saveCustom(state.live);
     syncDestFromEnv();
   })();
-
-  if (!state.live) {
-    state.envId = 'lander';
-    state.live = loadEnvById('lander');
-    state.dest = 'moon';
-  }
 
   function pushUrl() {
     var e = currentEnv();
@@ -110,34 +92,69 @@ BLFA.boot(function (A) {
     return B.o2Text(e.o2);
   }
 
+  function isDesktopTool() {
+    return window.matchMedia && window.matchMedia('(min-width: 1024px)').matches;
+  }
+
+  function gravitySliderBits() {
+    return tickMarksHtml() + tickLabelsHtml();
+  }
+
   function tickMarksHtml() {
     return '<div class="tool-slider__ticks" aria-hidden="true">' + S.GRAVITY_TICKS.map(function () {
       return '<span class="tool-slider__tick"></span>';
     }).join('') + '</div>';
   }
 
-  function positionGravityTicks() {
-    var wrap = $('toolSliders').querySelector('.tool-slider__ticks');
-    if (!wrap) return;
+  function tickLabelsHtml() {
+    return '<div class="tool-slider__tick-labels mono faint" aria-hidden="true">' +
+      S.GRAVITY_TICK_LABELS.map(function () { return '<span class="tool-slider__tick-label"></span>'; }).join('') +
+      '</div>';
+  }
+
+  function positionGravityTicks(root) {
+    if (!root) return;
     var min = S.SLIDER.g.min, max = S.SLIDER.g.max;
-    [].forEach.call(wrap.querySelectorAll('.tool-slider__tick'), function (el, i) {
-      var t = S.GRAVITY_TICKS[i];
-      if (t == null) return;
-      el.style.setProperty('left', ((t - min) / (max - min) * 100) + '%');
-    });
+    var tickWrap = root.querySelector('.tool-slider__ticks');
+    if (tickWrap) {
+      [].forEach.call(tickWrap.querySelectorAll('.tool-slider__tick'), function (el, i) {
+        var t = S.GRAVITY_TICKS[i];
+        if (t == null) return;
+        el.style.setProperty('left', ((t - min) / (max - min) * 100) + '%');
+      });
+    }
+    var labWrap = root.querySelector('.tool-slider__tick-labels');
+    if (labWrap) {
+      [].forEach.call(labWrap.querySelectorAll('.tool-slider__tick-label'), function (el, i) {
+        var t = S.GRAVITY_TICK_LABELS[i];
+        if (!t) return;
+        el.textContent = t.label;
+        el.style.setProperty('left', ((t.g - min) / (max - min) * 100) + '%');
+      });
+    }
+  }
+
+  function sliderRow(key, e, labelId) {
+    var labels = { g: 'Gravity', p: 'Pressure', o2: 'Oxygen' };
+    var b = S.SLIDER[key];
+    var val = key === 'g' ? B.gText(e.g) : (key === 'p' ? A.fmt(e.p, 1) + ' kPa' : B.o2Text(e.o2));
+    return '<label class="tool-slider" data-key="' + key + '"><span class="tool-slider__label">' + esc(labels[key]) + '</span>' +
+      '<span class="tool-slider__val mono num">' + esc(val) + '</span>' +
+      (key === 'g' ? gravitySliderBits() : '') +
+      '<input type="range" id="sl-' + key + '" value="' + e[key] + '" min="' + b.min + '" max="' + b.max + '" step="' + b.step + '"' +
+      ' aria-valuetext="' + esc(ariaValText(key, e)) + '" aria-labelledby="' + esc(labelId) + ' sl-' + key + '">' +
+      '</label>';
   }
 
   function bindSliders() {
     var e = currentEnv();
-    var host = $('toolSliders');
-    var keys = ['g', 'p', 'o2'];
-    keys.forEach(function (key) {
+    [].forEach.call(document.querySelectorAll('.tool-slider[data-key]'), function (row) {
+      var key = row.getAttribute('data-key');
       var b = S.SLIDER[key];
-      var id = 'sl-' + key;
-      var row = host.querySelector('[data-key="' + key + '"]');
-      if (!row) return;
+      if (!b) return;
       var input = row.querySelector('input[type="range"]');
       var valEl = row.querySelector('.tool-slider__val');
+      if (!input || !valEl) return;
       input.min = b.min;
       input.max = b.max;
       input.step = b.step;
@@ -151,24 +168,27 @@ BLFA.boot(function (A) {
 
   function renderSliders() {
     var e = currentEnv();
-    var labels = { g: 'Gravity', p: 'Pressure', o2: 'Oxygen' };
-    var html = '';
-    ['g', 'p', 'o2'].forEach(function (key) {
-      var b = S.SLIDER[key];
-      var val = key === 'g' ? B.gText(e.g) : (key === 'p' ? A.fmt(e.p, 1) + ' kPa' : B.o2Text(e.o2));
-      html += '<label class="tool-slider" data-key="' + key + '"><span class="tool-slider__label">' + esc(labels[key]) + '</span>' +
-        '<span class="tool-slider__val mono num">' + esc(val) + '</span>' +
-        (key === 'g' ? tickMarksHtml() : '') +
-        '<input type="range" id="sl-' + key + '" value="' + e[key] + '" min="' + b.min + '" max="' + b.max + '" step="' + b.step + '"' +
-        ' aria-valuetext="' + esc(ariaValText(key, e)) + '" aria-labelledby="tool-env-label sl-' + key + '">' +
-        '</label>';
-    });
-    $('toolSliders').innerHTML = html;
+    var desktop = isDesktopTool();
+    var mob = $('toolMobileG');
+    var rail = $('toolSliders');
+    if (mob) {
+      mob.innerHTML = desktop ? '' : sliderRow('g', e, 'tool-mobile-g-label');
+      if (!desktop) mob.setAttribute('aria-label', 'Gravity');
+      if (!desktop) positionGravityTicks(mob);
+    }
+    if (rail) {
+      var html = '';
+      if (desktop) html += sliderRow('g', e, 'tool-env-label');
+      html += sliderRow('p', e, 'tool-env-label') + sliderRow('o2', e, 'tool-env-label');
+      rail.innerHTML = html;
+      if (desktop) positionGravityTicks(rail);
+    }
     bindSliders();
-    positionGravityTicks();
-    if (!$('toolSliders').dataset.bound) {
-      $('toolSliders').dataset.bound = '1';
-      $('toolSliders').addEventListener('input', onSliderInput);
+    if (!document.documentElement.dataset.slidersBound) {
+      document.documentElement.dataset.slidersBound = '1';
+      document.addEventListener('input', function (ev) {
+        if (ev.target.closest('.tool-slider')) onSliderInput(ev);
+      });
     }
   }
 
@@ -286,7 +306,9 @@ BLFA.boot(function (A) {
     body.innerHTML = B.renderDetail(A, currentEnv(), rowId, { compact: true });
     if (!skipOpen) drawerCtl.setOpen(true);
     var h = $('detail-heading');
-    if (h) B.scrollToNode(h, true);
+    if (h) {
+      try { h.focus({ preventScroll: true }); } catch (e) { h.focus(); }
+    }
   }
 
   $('destChips').addEventListener('click', function (ev) {
@@ -322,11 +344,21 @@ BLFA.boot(function (A) {
 
   paint();
   initFlame();
+  window.addEventListener('resize', B.debounce(function () { renderSliders(); }, 120));
 
   function initFlame() {
     var cv = $('flameCanvas'); if (!cv || !cv.getContext) return;
     var ctx = cv.getContext('2d'), W = 0, H = 0, raf = 0, visible = true, tabVisible = true;
     var reduce = B.reducedMotion();
+    var themeFill = '#1a2230';
+
+    function readThemeFill() {
+      try {
+        var v = getComputedStyle(cv.parentElement || document.documentElement).getPropertyValue('--surface-3').trim();
+        if (v) themeFill = v;
+      } catch (e) { /* */ }
+    }
+    readThemeFill();
 
     function envNow() { return currentEnv(); }
 
@@ -355,15 +387,22 @@ BLFA.boot(function (A) {
       if (shape.mode === 'sphere') {
         var r = shape.width * 0.5 * s * flick;
         var cy = yb - r - 8 * s;
-        var pulse = reduce ? 0 : Math.sin(t * 1.3) * 0.7 * s;
-        var shell = ctx.createRadialGradient(cx, cy, 0, cx, cy, r + pulse);
+        var pulse = reduce ? 0 : Math.sin(t * 1.3) * 0.04 * r;
         var br = shape.brightness;
-        shell.addColorStop(0, 'rgba(50,110,255,' + (0.35 * br) + ')');
-        shell.addColorStop(1, 'rgba(50,110,255,0)');
-        ctx.fillStyle = shell; ctx.beginPath(); ctx.arc(cx, cy, r + pulse, 0, Math.PI * 2); ctx.fill();
+        var haloA = shape.haloAlpha != null ? shape.haloAlpha : 0.55;
+        var shell = ctx.createRadialGradient(cx, cy, r * 0.05, cx, cy, r * 1.35 + pulse);
+        shell.addColorStop(0, 'rgba(120,190,255,' + Math.min(1, 0.92 * br) + ')');
+        shell.addColorStop(0.35, 'rgba(70,140,255,' + Math.min(1, haloA * br) + ')');
+        shell.addColorStop(0.72, 'rgba(45,100,255,' + (0.35 * br) + ')');
+        shell.addColorStop(1, 'rgba(30,70,200,0)');
+        ctx.fillStyle = shell; ctx.beginPath(); ctx.arc(cx, cy, r * 1.35 + pulse, 0, Math.PI * 2); ctx.fill();
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = 'var(--surface-3)';
-        ctx.beginPath(); ctx.arc(cx, cy, shape.coreRadius * s, 0, Math.PI * 2); ctx.fill();
+        var core = ctx.createRadialGradient(cx, cy - r * 0.08, 0, cx, cy, r * 0.85);
+        core.addColorStop(0, 'rgba(200,230,255,' + (0.95 * br) + ')');
+        core.addColorStop(0.55, 'rgba(90,150,255,' + (0.85 * br) + ')');
+        core.addColorStop(1, themeFill);
+        ctx.fillStyle = core;
+        ctx.beginPath(); ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
         return;
       }
@@ -399,6 +438,6 @@ BLFA.boot(function (A) {
         else if (!visible && raf) { cancelAnimationFrame(raf); raf = 0; }
       }).observe(cv);
     }
-    document.addEventListener('blfa:theme', function () { draw(0); });
+    document.addEventListener('blfa:theme', function () { readThemeFill(); draw(0); });
   }
 });
