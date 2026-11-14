@@ -201,12 +201,18 @@ button.chip:hover, a.chip:hover { background: var(--surface-2); text-decoration:
 }
 .verdict .ic { width: 1.15em; height: 1.15em; }
 .verdict--sm { font-size: var(--fs-xs); padding: 1px var(--s-2) 1px var(--s-1); }
-.v-unknown.verdict { background: repeating-linear-gradient(135deg, var(--v-bg) 0 5px, transparent 5px 10px); }
+.v-unknown.verdict { background: var(--v-bg); border: 1px dashed color-mix(in srgb, var(--v) 70%, var(--line)); border-left: 3px solid var(--v); }
 
 .legend { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-3); list-style: none; }
 .legend li { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); padding: var(--s-3); background: var(--surface); border: var(--bw) solid var(--line); border-radius: var(--r-2); font-size: var(--fs-sm); color: var(--text-2); }
-.legend--compact li { flex-direction: row; align-items: center; padding: var(--s-2) var(--s-3); gap: var(--s-3); }
-.legend--compact li span:not(.verdict):not(.ic) { display: none; }
+.legend--compact { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); grid-template-columns: unset; margin: var(--s-3) 0; padding: 0; list-style: none; }
+.legend--compact .legend-pill { display: inline-flex; align-items: center; gap: var(--s-2); padding: var(--s-1) var(--s-2); background: var(--surface-2); border: var(--bw) solid var(--line); border-radius: 999px; border-left: 3px solid var(--v); }
+.legend--compact .legend-pill.v-breaks { --v: var(--breaks); }
+.legend--compact .legend-pill.v-weakens { --v: var(--weakens); }
+.legend--compact .legend-pill.v-unknown { --v: var(--unknown); }
+.legend--compact .legend-pill.v-holds { --v: var(--holds); }
+.legend--compact .legend-pill__n { font-size: var(--fs-xs); font-weight: 700; color: var(--v); min-width: 1.5ch; text-align: right; }
+.legend--compact .legend-pill .verdict { background: transparent; border: 0; padding: 0; font-size: var(--fs-xs); }
 details.disclosure--section { margin-top: var(--s-8); border: 0; background: transparent; }
 details.disclosure--section > summary { padding: var(--s-4) 0; font-size: var(--fs-md); border-bottom: var(--bw) solid var(--line); border-radius: 0; }
 details.disclosure--section > .disclosure__body { padding: var(--s-6) 0 0; }

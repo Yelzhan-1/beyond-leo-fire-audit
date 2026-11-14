@@ -9,11 +9,15 @@ BLFA.boot(function (A) {
   var rover = A.envById('rover');
   if (rover && $('methodCo2')) {
     var co2 = A.co2Discharge(rover, A.PFE_CO2_KG);
-    $('methodCo2').textContent = 'one ' + A.fmt(A.PFE_CO2_KG, 1) + ' kg CO\u2082 extinguisher emptied into the ' + A.fmt(rover.v, 0) + ' m\u00b3 rover gives about ' + A.sig(co2.mmHg) + ' mmHg of CO\u2082, against a one-hour limit of ' + A.LIMITS.co2_1h_mmHg + ' mmHg.';
+    $('methodCo2').textContent = 'One ' + A.fmt(A.PFE_CO2_KG, 1) + ' kg CO\u2082 extinguisher emptied into the ' + A.fmt(rover.v, 0) + ' m\u00b3 rover gives about ' + A.sig(co2.mmHg) + ' mmHg of CO\u2082, against a one-hour limit of ' + A.LIMITS.co2_1h_mmHg + ' mmHg.';
   }
   if ($('legend')) {
-    var legendItems = [['holds', 'Evidence supports the rule.'], ['weakens', 'Works in part or with an exception.'], ['breaks', 'Evidence contradicts the rule.'], ['unknown', 'Not measured in matching conditions.']];
-    $('legend').innerHTML = legendItems.map(function (x) { return '<li class="v-' + x[0] + '">' + B.verdict(x[0]) + '<span>' + x[1] + '</span></li>'; }).join('');
+    var tally = { breaks: 0, weakens: 0, unknown: 0, holds: 0 };
+    presets.forEach(function (e) {
+      var c = A.summary(e).counts;
+      Object.keys(tally).forEach(function (k) { tally[k] += c[k]; });
+    });
+    $('legend').innerHTML = B.legendPills(tally);
   }
   if ($('heat')) {
     var h = '<table class="table heat"><caption class="visually-hidden">Verdict of each rule in each preset cabin. Each verdict links to its evidence.</caption><thead><tr><th scope="col">Rule</th>';
