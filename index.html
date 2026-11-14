@@ -71,6 +71,11 @@
 
     <noscript><div class="state state--error"><h3>The live numbers need JavaScript</h3><p>Read the <a href="method">method</a>, <a href="evidence">evidence</a>, or <a href="evidence.json">evidence.json</a>. The audit table needs JavaScript.</p></div></noscript>
 
+    <div class="tool-coach" id="toolCoach" hidden>
+      <p class="tool-coach__text"><span class="tool-coach__n">1</span> Pick a destination · <span class="tool-coach__n">2</span> Drag gravity · <span class="tool-coach__n">3</span> Tap a rule for evidence</p>
+      <button type="button" class="btn btn--ghost btn--sm tool-coach__dismiss" id="toolCoachDismiss" aria-label="Dismiss tips">Dismiss</button>
+    </div>
+
     <section class="tool-workspace" aria-label="Audit workspace">
     <div class="tool-grid">
       <aside class="tool-rail" aria-label="Cabin controls">
@@ -96,14 +101,30 @@
           <p class="tool-stage__g mono" id="stageGravity" aria-hidden="true"></p>
         </div>
         <p class="tool-stage__cap faint small" id="stageCaption" hidden></p>
+        <section class="tool-stage__stats-wrap" aria-labelledby="stage-stats-label">
+          <h3 class="visually-hidden" id="stage-stats-label">Flame schematic notes</h3>
+          <dl class="tool-stage__stats" id="stageStats"></dl>
+        </section>
         <div class="tool-mobile-g" id="toolMobileG"></div>
       </section>
 
       <aside class="tool-verdicts" aria-labelledby="verdicts-title">
         <div class="tool-verdicts__head">
-          <h2 id="verdicts-title">Verdicts</h2>
+          <div class="tool-verdicts__title-row">
+            <h2 id="verdicts-title">Verdicts</h2>
+            <div class="tool-verdicts__actions">
+              <button type="button" class="btn btn--ghost btn--sm" id="toolShare">Share</button>
+              <button type="button" class="btn btn--ghost btn--sm" id="toolReport">Download report card</button>
+              <button type="button" class="btn btn--ghost btn--sm" id="toolCompare" aria-pressed="false">Compare</button>
+            </div>
+          </div>
+          <div class="tool-compare" id="toolCompareBar" hidden>
+            <p class="tool-compare__label">Scenario B</p>
+            <div class="chip-row chip-row--dest" id="compareDestChips" role="group" aria-label="Compare destination"></div>
+          </div>
           <div class="tool-verdicts__sum" id="verdictSum" data-app aria-busy="true"></div>
         </div>
+        <div class="tool-toast" id="toolToast" role="status" aria-live="polite" hidden></div>
         <ol class="verdict-list" id="toolVerdicts" data-app aria-busy="true" aria-live="polite">
           <li class="skeleton" role="status"><span class="visually-hidden">Loading verdicts</span><i></i><i></i><i></i></li>
         </ol>
@@ -171,6 +192,7 @@
 <script src="assets/js/engine.js" defer></script>
 <script src="assets/js/tool/scenario.js" defer></script>
 <script src="assets/js/tool/flame-geom.js" defer></script>
+<script src="assets/js/tool/report-card.js" defer></script>
 <script src="assets/js/ui/common.js" defer></script>
 <script src="assets/js/ui/detail-panel.js" defer></script>
 <script src="assets/js/ui/drawer.js" defer></script>

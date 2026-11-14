@@ -4,6 +4,7 @@ BLFA.boot(function (A) {
   var B = window.BLFA, $ = B.$, esc = B.esc;
   var S = window.BLFA_SCENARIO;
   var G = window.BLFA_FLAME_GEOM;
+  var RPT = window.BLFA_REPORT;
 
   var DEST = [
     { id: 'iss', label: 'ISS', defaultEnv: 'iss' },
@@ -16,7 +17,11 @@ BLFA.boot(function (A) {
     dest: 'moon',
     envId: 'lander',
     live: null,
-    row: null
+    row: null,
+    compareOn: false,
+    compareDest: 'iss',
+    compareEnvId: 'iss',
+    compareLive: null
   };
   var prevStatuses = {};
   var paintRaf = 0;
@@ -64,21 +69,83 @@ BLFA.boot(function (A) {
     state.row = parsed.row && A.rowById(parsed.row) ? parsed.row : null;
     if (state.envId === 'custom') B.saveCustom(state.live);
     syncDestFromEnv();
+    if (parsed.compareOn && parsed.compare) {
+      state.compareOn = true;
+      var cmp = S.resolveCompareFromUrl(parsed.compare, A.ENVS, A.CUSTOM_DEFAULT, B.loadCustom);
+      if (cmp) {
+        state.compareDest = cmp.dest || parsed.compare.dest;
+        state.compareEnvId = cmp.envId;
+        state.compareLive = cloneEnv(cmp.live);
+      }
+    }
   })();
+
+  function scenarioFmt() {
+    return {
+      fmtG: function (g) { return B.gText(g); },
+      fmtP: function (p) { return A.fmt(p, 1); },
+      fmtO2: function (o2) { return B.o2Text(o2); }
+    };
+  }
+
+  function envSubtitle(e) {
+    return S.scenarioSubtitle({
+      envId: state.envId,
+      dest: state.dest,
+      env: e,
+      fmtG: scenarioFmt().fmtG,
+      fmtP: scenarioFmt().fmtP,
+      fmtO2: function (o) { return B.o2Text(o); }
+    });
+  }
+
+  function compareSnapshot() {
+    if (!state.compareOn || !state.compareLive) return null;
+    return {
+      dest: state.compareDest,
+      envId: state.compareEnvId,
+      g: state.compareLive.g,
+      p: state.compareLive.p,
+      o2: state.compareLive.o2
+    };
+  }
+
+  function comparePreset() {
+    return state.compareEnvId !== 'custom' ? A.envById(state.compareEnvId) : null;
+  }
 
   function pushUrl() {
     var e = currentEnv();
     var preset = state.envId !== 'custom' ? A.envById(state.envId) : null;
-    var q = S.serializeScenario({
-      dest: state.dest,
-      envId: state.envId,
-      g: e.g,
-      p: e.p,
-      o2: e.o2
-    }, preset);
+    var main = { dest: state.dest, envId: state.envId, g: e.g, p: e.p, o2: e.o2 };
+    var q = state.compareOn
+      ? S.serializeScenarioFull(main, preset, compareSnapshot(), comparePreset())
+      : S.serializeScenario(main, preset);
     try {
       window.history.replaceState(null, '', window.location.pathname + (q ? '?' + q : ''));
     } catch (err) { /* */ }
+  }
+
+  function refreshCompareLive(destId) {
+    var d = DEST.filter(function (x) { return x.id === destId; })[0];
+    if (!d) return;
+    state.compareDest = destId;
+    state.compareEnvId = d.defaultEnv;
+    state.compareLive = loadEnvById(d.defaultEnv);
+    pushUrl();
+    schedulePaint();
+  }
+
+  function toggleCompare(on) {
+    state.compareOn = !!on;
+    $('toolCompare').setAttribute('aria-pressed', state.compareOn ? 'true' : 'false');
+    $('toolCompareBar').hidden = !state.compareOn;
+    if (state.compareOn && !state.compareLive) refreshCompareLive(state.compareDest || 'iss');
+    if (!state.compareOn) {
+      state.compareLive = null;
+    }
+    pushUrl();
+    schedulePaint();
   }
 
   function sliderPct(val, min, max) {
@@ -115,6 +182,8 @@ BLFA.boot(function (A) {
   function positionGravityTicks(root) {
     if (!root) return;
     var min = S.SLIDER.g.min, max = S.SLIDER.g.max;
+    var mobile = !!root.closest('.tool-mobile-g');
+    var narrow = mobile || (root.offsetWidth > 0 && root.offsetWidth < 360);
     var tickWrap = root.querySelector('.tool-slider__ticks');
     if (tickWrap) {
       [].forEach.call(tickWrap.querySelectorAll('.tool-slider__tick'), function (el, i) {
@@ -125,11 +194,19 @@ BLFA.boot(function (A) {
     }
     var labWrap = root.querySelector('.tool-slider__tick-labels');
     if (labWrap) {
+      labWrap.classList.toggle('tool-slider__tick-labels--stagger', narrow);
       [].forEach.call(labWrap.querySelectorAll('.tool-slider__tick-label'), function (el, i) {
         var t = S.GRAVITY_TICK_LABELS[i];
         if (!t) return;
-        el.textContent = t.label;
-        el.style.setProperty('left', ((t.g - min) / (max - min) * 100) + '%');
+        var pct = (t.g - min) / (max - min) * 100;
+        var transform = 'translateX(-50%)';
+        if (pct <= 6) transform = 'translateX(0)';
+        else if (pct >= 94) transform = 'translateX(-100%)';
+        el.classList.toggle('tool-slider__tick-label--lower', i === 1 || i === 3);
+        el.textContent = t.short;
+        el.setAttribute('title', t.title);
+        el.style.setProperty('left', pct + '%');
+        el.style.setProperty('transform', transform);
       });
     }
   }
@@ -231,11 +308,19 @@ BLFA.boot(function (A) {
     }).join('');
   }
 
+  function renderCompareDest() {
+    var bar = $('compareDestChips');
+    if (!bar) return;
+    bar.innerHTML = DEST.map(function (d) {
+      return '<button type="button" class="chip chip--dest" data-cmp-dest="' + d.id + '" aria-pressed="' + (state.compareDest === d.id) + '">' + esc(d.label) + '</button>';
+    }).join('');
+  }
+
   function renderVerdicts() {
     var e = currentEnv(), sum = A.summary(e);
     var sumEl = $('verdictSum');
     sumEl.removeAttribute('aria-busy');
-    sumEl.innerHTML = '<span class="tool-verdicts__env">' + esc(e.name) + '</span><div class="count-pills" role="status">' + B.summaryPills(sum.counts) + '</div>';
+    sumEl.innerHTML = '<span class="tool-verdicts__env">' + esc(envSubtitle(e)) + '</span><div class="count-pills" role="status">' + B.summaryPills(sum.counts) + '</div>';
     if (!B.reducedMotion() && sumEl.dataset.counts) {
       var prev = JSON.parse(sumEl.dataset.counts);
       ['breaks', 'weakens', 'unknown', 'holds'].forEach(function (k) {
@@ -247,18 +332,48 @@ BLFA.boot(function (A) {
     }
     sumEl.dataset.counts = JSON.stringify(sum.counts);
 
-    var rows = '';
-    A.ROWS.forEach(function (r, idx) {
-      var v = A.evaluate(r.id, e);
-      var flash = prevStatuses[r.id] && prevStatuses[r.id] !== v.status ? ' verdict-list__item--flash' : '';
-      prevStatuses[r.id] = v.status;
-      rows += '<li class="verdict-list__item v-' + v.status + flash + '">' +
-        '<button type="button" class="verdict-list__rule" data-row="' + r.id + '" title="' + esc(r.short) + '">' +
-        '<span class="mono faint">R' + (idx < 9 ? '0' : '') + (idx + 1) + '</span> ' + esc(r.short) + '</button>' +
-        '<span class="verdict-list__link">' + B.verdict(v.status, true) + '</span></li>';
-    });
-    $('toolVerdicts').removeAttribute('aria-busy');
-    $('toolVerdicts').innerHTML = rows;
+    var listEl = $('toolVerdicts');
+    if (state.compareOn && state.compareLive) {
+      var bEnv = state.compareLive;
+      var aSub = envSubtitle(e);
+      var bSub = S.scenarioSubtitle({
+        envId: state.compareEnvId,
+        dest: state.compareDest,
+        env: bEnv,
+        fmtG: scenarioFmt().fmtG,
+        fmtP: scenarioFmt().fmtP,
+        fmtO2: function (o) { return B.o2Text(o); }
+      });
+      var rows = '<li class="verdict-compare__head" aria-hidden="true"><span>Rule</span>' +
+        '<span class="verdict-compare__cols"><span class="mono faint">' + esc(aSub) + '</span><span class="mono faint">' + esc(bSub) + '</span></span></li>';
+      A.ROWS.forEach(function (r, idx) {
+        var va = A.evaluate(r.id, e);
+        var vb = A.evaluate(r.id, bEnv);
+        var diff = va.status !== vb.status ? ' verdict-compare__row--diff' : '';
+        rows += '<li class="verdict-compare__row' + diff + ' v-' + va.status + '">' +
+          '<button type="button" class="verdict-list__rule" data-row="' + r.id + '" title="' + esc(r.short) + '">' +
+          '<span class="mono faint">R' + (idx < 9 ? '0' : '') + (idx + 1) + '</span> ' + esc(r.short) + '</button>' +
+          '<span class="verdict-compare__cols" role="group" aria-label="A versus B">' +
+          '<span class="verdict-compare__cell" title="' + esc(aSub) + '">' + B.verdict(va.status, true) + '</span>' +
+          '<span class="verdict-compare__cell" title="' + esc(bSub) + '">' + B.verdict(vb.status, true) + '</span></span></li>';
+      });
+      listEl.className = 'verdict-list verdict-list--compare';
+      listEl.innerHTML = rows;
+    } else {
+      var rows = '';
+      A.ROWS.forEach(function (r, idx) {
+        var v = A.evaluate(r.id, e);
+        var flash = prevStatuses[r.id] && prevStatuses[r.id] !== v.status ? ' verdict-list__item--flash' : '';
+        prevStatuses[r.id] = v.status;
+        rows += '<li class="verdict-list__item v-' + v.status + flash + '">' +
+          '<button type="button" class="verdict-list__rule" data-row="' + r.id + '" title="' + esc(r.short) + '">' +
+          '<span class="mono faint">R' + (idx < 9 ? '0' : '') + (idx + 1) + '</span> ' + esc(r.short) + '</button>' +
+          '<span class="verdict-list__link">' + B.verdict(v.status, true) + '</span></li>';
+      });
+      listEl.className = 'verdict-list';
+      listEl.innerHTML = rows;
+    }
+    listEl.removeAttribute('aria-busy');
   }
 
   function renderStage() {
@@ -268,11 +383,21 @@ BLFA.boot(function (A) {
     var cap = $('stageCaption');
     cap.innerHTML = 'Schematic flame at ' + esc(B.gText(e.g)) + '. <a class="faint" href="method#flex-psi">NASA FLEX / PSI data</a>';
     cap.hidden = false;
+    var fb = G.flameBehaviourLabel(e.g);
+    var stats = $('stageStats');
+    if (stats) {
+      stats.innerHTML = '<div><dt>Shape</dt><dd>' + esc(fb.shape) + '</dd></div>' +
+        '<div><dt>Behaviour</dt><dd>' + esc(fb.behaviour) + '</dd></div>' +
+        '<div><dt>Gravity</dt><dd class="mono">' + esc(B.gText(e.g)) + '</dd></div>';
+    }
   }
 
   function paint(skipSliders) {
     renderDestinations();
     renderPresets();
+    renderCompareDest();
+    $('toolCompareBar').hidden = !state.compareOn;
+    $('toolCompare').setAttribute('aria-pressed', state.compareOn ? 'true' : 'false');
     if (!skipSliders) renderSliders(); else bindSliders();
     renderVerdicts();
     renderStage();
@@ -342,9 +467,94 @@ BLFA.boot(function (A) {
     openDrawer(state.row);
   }
 
+  var toastTimer = 0;
+  function showToast(msg, withUrl) {
+    var el = $('toolToast');
+    if (!el) return;
+    var html = esc(msg);
+    if (withUrl) {
+      html += '<label class="tool-toast__fallback visually-hidden" for="toolShareUrl">Share URL</label>' +
+        '<input class="tool-toast__url mono" id="toolShareUrl" type="text" readonly value="' + esc(withUrl) + '">';
+    }
+    el.innerHTML = html;
+    el.hidden = false;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.hidden = true; }, withUrl ? 12000 : 3200);
+  }
+
+  function shareUrl() {
+    var e = currentEnv();
+    var preset = state.envId !== 'custom' ? A.envById(state.envId) : null;
+    var url = S.buildShareUrl(window.location.origin, window.location.pathname, {
+      dest: state.dest,
+      envId: state.envId,
+      g: e.g,
+      p: e.p,
+      o2: e.o2
+    }, preset, state.compareOn ? compareSnapshot() : null, comparePreset());
+    if (navigator.share) {
+      navigator.share({ title: document.title, url: url }).catch(function () { /* user cancelled */ });
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () {
+        showToast('Link copied to clipboard');
+      }).catch(function () {
+        showToast('Copy this link', url);
+      });
+      return;
+    }
+    showToast('Copy this link', url);
+  }
+
+  function downloadReport() {
+    if (!RPT) return;
+    var e = currentEnv();
+    var model = RPT.buildReportCardModel(A, e, {
+      dest: state.dest,
+      envId: state.envId,
+      subtitle: envSubtitle(e),
+      siteUrl: window.location.host || 'beyond-leo-fire-audit'
+    });
+    var cv = document.createElement('canvas');
+    var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    var run = function () {
+      RPT.drawReportCard(cv, model, theme);
+      RPT.downloadReportPng(cv, 'beyond-leo-audit-report.png').catch(function () {
+        showToast('Could not download report card');
+      });
+    };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(run).catch(run);
+    else run();
+  }
+
+  $('toolShare').addEventListener('click', shareUrl);
+  $('toolReport').addEventListener('click', downloadReport);
+  $('toolCompare').addEventListener('click', function () { toggleCompare(!state.compareOn); });
+  $('compareDestChips').addEventListener('click', function (ev) {
+    var btn = ev.target.closest('[data-cmp-dest]');
+    if (btn) refreshCompareLive(btn.getAttribute('data-cmp-dest'));
+  });
+
+  (function initCoach() {
+    var coach = $('toolCoach');
+    var key = 'blfa-coach-dismissed';
+    if (!coach) return;
+    try {
+      if (localStorage.getItem(key) === '1') return;
+      coach.hidden = false;
+      $('toolCoachDismiss').addEventListener('click', function () {
+        coach.hidden = true;
+        try { localStorage.setItem(key, '1'); } catch (e) { /* */ }
+      });
+    } catch (e) {
+      coach.hidden = true;
+    }
+  })();
+
   paint();
   initFlame();
-  window.addEventListener('resize', B.debounce(function () { renderSliders(); }, 120));
+  window.addEventListener('resize', B.debounce(function () { renderSliders(); positionGravityTicks($('toolSliders')); positionGravityTicks($('toolMobileG')); }, 120));
 
   function initFlame() {
     var cv = $('flameCanvas'); if (!cv || !cv.getContext) return;

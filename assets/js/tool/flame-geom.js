@@ -48,5 +48,16 @@
     };
   }
 
-  return { flameShape: flameShape };
+  function flameBehaviourLabel(g) {
+    var gn = Math.max(0, Math.min(1, g == null ? 0 : g));
+    if (gn < 0.01) {
+      return { shape: 'Sphere', behaviour: 'No buoyancy — schematic 0 g flame' };
+    }
+    if (gn < 0.9) {
+      return { shape: 'Teardrop', behaviour: 'Partial gravity — buoyancy returns' };
+    }
+    return { shape: 'Teardrop', behaviour: 'Earth-like buoyant flame' };
+  }
+
+  return { flameShape: flameShape, flameBehaviourLabel: flameBehaviourLabel };
 });
